@@ -1,5 +1,4 @@
 #include "motor/Config.hpp"
-#include "Config.hpp"
 
 void gravity::MotorConfig::register_pdos()
 {

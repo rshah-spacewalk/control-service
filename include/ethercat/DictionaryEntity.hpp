@@ -145,7 +145,7 @@ namespace gravity
             sdo_write<T>(position, index, subindex, new_value);
         }
 
-        size_t get_size_bytes() const override
+        size_t const get_size_bytes() const override
         {
             return sizeof(T);
         }

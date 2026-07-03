@@ -3,7 +3,9 @@
 #include <array>
 #include <ecrt.h>
 #include <string>
-#include <fmt.h>
+
+#include <gravity/fmt_config.hpp>
+#include <gravity/Logger.hpp>
 
 namespace gravity
 {

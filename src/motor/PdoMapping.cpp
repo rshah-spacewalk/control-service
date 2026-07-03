@@ -1,4 +1,4 @@
-#include "Config.hpp"
+#include "motor/Config.hpp"
 
 void gravity::MotorConfig::map_custom_pdo(
     const uint16_t slave,

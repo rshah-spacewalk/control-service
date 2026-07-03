@@ -1,7 +1,8 @@
 #pragma once
 
 #include "ethercat/Util.hpp"
-#include "gravity/Logger.hpp"
+#include <gravity/fmt_config.hpp>
+#include <gravity/Logger.hpp>
 #include <gravity/Transforms.hpp>
 #include <ecrt.h>
 #include <stdint.h>
