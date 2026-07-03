@@ -1,0 +1,7 @@
+build/
+debug/
+cmake-build-debug/
+DS_Store/
+cmake-build-vcpkg/
+.idea/
+data/

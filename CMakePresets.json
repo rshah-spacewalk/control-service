@@ -1,0 +1,20 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "rpi",
+            "generator": "Ninja",
+            "displayName": "rpi-build-conf",
+            "description": "rpi-build-conf-clang-20",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_PREFIX_PATH": "/opt/gravity",
+                "CMAKE_INSTALL_PREFIX": "/opt/gravity",
+                "CMAKE_C_COMPILER": "/usr/bin/clang-20",
+                "CMAKE_CXX_COMPILER": "/usr/bin/clang++-20",
+                "CMAKE_TOOLCHAIN_FILE": "/home/ravi/vcpkg/scripts/buildsystems/vcpkg.cmake"
+            }
+        }
+    ]
+}
