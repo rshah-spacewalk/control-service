@@ -14,7 +14,7 @@ gravity::Controller::~Controller()
     _log->info("Released!");
 }
 
-bool gravity::Controller::setup()
+bool gravity::Controller::setup(bool map_pdos)
 {
     return false;
 }

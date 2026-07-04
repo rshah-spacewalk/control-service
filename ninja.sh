@@ -34,7 +34,7 @@ cmake --build build -j$(nproc)
 
 # Run normally
 if $run; then
-    ./build/mover
+    sudo ./build/mover
 fi
 
 if $install; then

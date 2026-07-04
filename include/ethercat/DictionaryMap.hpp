@@ -117,15 +117,10 @@ namespace gravity
             assert(entries.size() == ENTRY_COUNT); // check size
         }
 
-        DictionaryMap(const DictionaryMap &) = delete;
-        DictionaryMap &operator=(const DictionaryMap &) = delete;
-        DictionaryMap(DictionaryMap &&) noexcept = default;
-        DictionaryMap &operator=(DictionaryMap &&) noexcept = default;
-
         const std::unordered_map<std::string, std::unique_ptr<DictionaryEntity>> &get_entries() const noexcept { return entries; }
 
     private:
-        static constexpr size_t ENTRY_COUNT = 28;
+        const size_t ENTRY_COUNT = 28;
         std::unordered_map<std::string, std::unique_ptr<DictionaryEntity>> entries;
 
         template <typename T>
@@ -152,3 +147,8 @@ namespace gravity
     };
 
 } // namespace gravity
+
+// DictionaryMap(const DictionaryMap &) = delete;
+// DictionaryMap &operator=(const DictionaryMap &) = delete;
+// DictionaryMap(DictionaryMap &&) noexcept = default;
+// DictionaryMap &operator=(DictionaryMap &&) noexcept = default;

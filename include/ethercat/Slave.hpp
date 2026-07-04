@@ -86,7 +86,7 @@ namespace gravity
                 << "  Name       : " << slave.name << "\n"
                 << "  Product    : " << hex_str(slave.product_code, 8) << "\n"
                 << "  Vendor     : " << hex_str(slave.vendor_id, 8) << "\n"
-                << "  State.     : " << util::tf::enum_str(slave.al_state) << "\n"
+                << "  State.     : " << std::to_string(slave.al_state) << "\n"
                 << "  SDO #      : " << slave.sdo_count << "\n";
             return oss.str();
         }

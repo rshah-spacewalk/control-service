@@ -20,12 +20,12 @@ namespace gravity
 
         ~Controller();
 
-        bool enable(bool map_pdos = false);
+        bool enable();
         bool disable();
         bool quick_stop();
         bool release_quick_stop();
 
-        bool setup();
+        bool setup(bool map_pdos = false);
         bool loop();
     };
 }
