@@ -5,6 +5,7 @@
 #include <string>
 #include <stdexcept>
 #include "ethercat/SdoEx.hpp"
+#include <gravity/Transforms.hpp>
 
 namespace gravity
 {
@@ -19,9 +20,9 @@ namespace gravity
     {
     protected:
         const std::string name;
+        const uint8_t position;
         const uint16_t index;
         const uint8_t subindex;
-        const uint8_t position;
         const std::string uom;
         const MappingType mapping_type;
         uint32_t offset{};
@@ -29,14 +30,14 @@ namespace gravity
     public:
         DictionaryEntity(
             std::string name,
+            const uint8_t position,
             const uint16_t index,
             const uint8_t subindex,
-            const uint8_t position,
             std::string uom,
             const MappingType mapping_type) : name(std::move(name)),
+                                              position(position),
                                               index(index),
                                               subindex(subindex),
-                                              position(position),
                                               uom(std::move(uom)),
                                               mapping_type(mapping_type)
         {
@@ -91,31 +92,33 @@ namespace gravity
 
     public:
         DataObject(
-            std::string name,
+            const std::string &name,
+            const uint8_t position,
             const uint16_t index,
             const uint8_t subindex,
-            const uint8_t position,
             T min_value,
             T max_value,
             T default_value,
-            std::string uom,
+            const std::string &uom,
             const MappingType mapping_type)
 
-            : DictionaryEntity(std::move(name), index, subindex, position, std::move(uom), mapping_type),
+            : DictionaryEntity(name, position, index, subindex, uom, mapping_type),
               min_value(min_value),
               max_value(max_value),
               default_value(default_value),
               value(default_value)
         {
+            // spdlog::info(
+            //     "[{:<32}] [{} : 0x{:04X} : 0x{:02X}] [{:<12} -> {:<12}: {:<12}] {}",
+            //     getName(), getPosition(), getIndex(), getSubindex(),
+            //     getMinValue(), getMaxValue(), getDefaultValue(),
+            //     util::tf::enum_str(getMappingType()));
         }
 
         // Getter & Setters --------
-        T &getValue() noexcept { return value; }
-        void setValue(T new_value) { value = new_value; }
         const T &getMinValue() const noexcept { return min_value; }
         const T &getMaxValue() const noexcept { return max_value; }
         const T &getDefaultValue() const noexcept { return default_value; }
-
         const uint32_t getEntryKey() const override
         {
             return (static_cast<uint32_t>(index) << 16) |
@@ -134,6 +137,7 @@ namespace gravity
 
         T read_sdo()
         {
+            // spdlog::info("SDO read [{} : 0x{:04X} : 0x{:02X}]", position, index, subindex);
             value = sdo_read<T>(position, index, subindex);
             return value;
         }

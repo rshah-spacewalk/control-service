@@ -20,30 +20,30 @@ namespace gravity
     class MotorConfig
     {
     private:
-        std::vector<uint8_t> enabled;
         std::vector<MotorBase *> motors;
         std::shared_ptr<EthercatMaster> master;
         std::shared_ptr<spdlog::logger> _log;
 
-    public:
-        explicit MotorConfig(
-            std::vector<MotorBase *> _motors,
-            const std::vector<uint8_t> &_enabled,
-            const std::shared_ptr<EthercatMaster> &_master)
-            : master(_master), motors(_motors), enabled(_enabled),
-              _log(make_class_logger("MotorConfig"))
-        {
-        }
         static void map_custom_pdo(
             const uint16_t slave,
             const std::vector<uint32_t> &rxpdo_entries,
             const std::vector<uint32_t> &txpdo_entries);
 
-        void map_pdos();
-        void register_pdos();
+    public:
+        explicit MotorConfig(
+            std::vector<MotorBase *> _motors,
+            const std::shared_ptr<EthercatMaster> &_master)
+            : master(_master), motors(_motors),
+              _log(make_class_logger("MotorConfig"))
+        {
+        }
+
         void apply_configs();
         void reset_encoder();
         void reset_errors();
+
+        void map_pdos();
+        void register_pdos_to_domain();
     };
 
 }

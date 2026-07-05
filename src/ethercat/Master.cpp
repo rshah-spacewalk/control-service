@@ -31,7 +31,7 @@ bool gravity::EthercatMaster::request_master()
         _log->error("{}", err);
         throw std::runtime_error(err);
     }
-    _log->info("EtherCAT Master instance initialized.");
+    _log->info("EtherCAT Master instance [{}] initialized.", master_index);
 
     return true;
 }
@@ -100,7 +100,7 @@ int gravity::EthercatMaster::set_master_state(std::string_view state)
     return resp;
 }
 
-bool gravity::EthercatMaster::is_active()
+bool gravity::EthercatMaster::is_activated()
 {
     ec_master_state_t state;
     if (get_ec_master_state(state))

@@ -5,7 +5,8 @@ int main()
 {
     try
     {
-        auto controller = std::make_unique<gravity::Controller>();
+        auto controller = std::make_unique<gravity::Controller>(false);
+        controller->setup(false);
         std::this_thread::sleep_for(std::chrono::seconds(4));
     }
     catch (std::exception &e)

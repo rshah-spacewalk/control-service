@@ -23,10 +23,22 @@ namespace gravity
             : SlaveBase(alias, position, vendor_id, product_code)
         {
             _log->info(str());
+            build_data_objects();
+            config_pdo_list();
         }
 
         MotorBase(ec_master_t *ec_master_ptr, int position)
-            : SlaveBase(ec_master_ptr, position) {}
+            : SlaveBase(ec_master_ptr, position)
+        {
+            _log->info(str());
+            build_data_objects();
+            config_pdo_list();
+        }
+
+        ~MotorBase()
+        {
+            _log->info("Motor [{}] Released", position);
+        }
 
         void enable_cycle();
         void disable_cycle();

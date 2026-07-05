@@ -44,7 +44,7 @@ fi
 # Debug: Start GDB and run the program immediately
 if $debug; then
     echo "Starting GDB..."
-    gdb -ex run ./build/mover
+    sudo gdb -ex run ./build/mover
 fi
 
 

@@ -9,7 +9,9 @@ namespace gravity
     class Controller
     {
     private:
-        std::vector<uint8_t> enabled = {1};
+        const size_t DOF = 6;
+        bool map_pdos{false};
+        std::array<double, 6> motor_position{};
         std::shared_ptr<EthercatMaster> master;
         std::shared_ptr<MotorConfig> motor_config;
         std::vector<std::unique_ptr<MotorBase>> motors;
@@ -17,16 +19,24 @@ namespace gravity
         std::shared_ptr<spdlog::logger> _log;
 
     public:
-        explicit Controller();
+        explicit Controller(bool _map_pdos = false);
 
         ~Controller();
 
         bool enable();
         bool disable();
+        bool config_cycle();
+
         bool quick_stop();
         bool release_quick_stop();
 
-        bool setup(bool map_pdos = false);
+        bool handle_error();
+        bool handle_status_word();
+
+        bool setup(bool strict = true);
         bool loop();
     };
 }
+
+// contructor order : top -> bottom
+// destructor order : bottom -> top

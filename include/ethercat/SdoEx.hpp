@@ -10,8 +10,10 @@
 namespace gravity
 {
     template <typename T>
-    T sdo_read(const uint16_t &slave_position, const uint16_t &index, const uint8_t &subindex)
+    T sdo_read(const uint16_t slave_position, const uint16_t index, const uint8_t subindex)
     {
+        // spdlog::info("SDO READ [{} : 0x{:04X} : 0x{:02X}]", slave_position, index, subindex);
+
         size_t result_size = 0;
         uint32_t abort_code = 0;
         size_t size = sizeof(T);
@@ -58,6 +60,8 @@ namespace gravity
     template <typename T>
     void sdo_write(uint16_t slave_position, uint16_t index, uint8_t subindex, T value)
     {
+        // spdlog::info("SDO WRITE [{} : 0x{:04X} : 0x{:02X}]", slave_position, index, subindex);
+
         uint32_t abort_code = 0;
         auto write_data = to_little_endian_bytes(value);
 
@@ -65,7 +69,7 @@ namespace gravity
         ec_master_t *master_ptr = ecrt_open_master(master_index);
         if (master_ptr == nullptr)
         {
-            throw std::runtime_error("Read Error: EC_MASTER invalid");
+            throw std::runtime_error("Write Error: EC_MASTER invalid");
         }
 
         int result = ecrt_master_sdo_download(

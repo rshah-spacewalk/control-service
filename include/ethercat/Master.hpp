@@ -40,7 +40,7 @@ namespace gravity
         bool get_ec_master_state(ec_master_state_t &state);
         int set_master_state(std::string_view state);
 
-        bool is_active();
+        bool is_activated();
         bool is_requested();
 
         ~EthercatMaster();
