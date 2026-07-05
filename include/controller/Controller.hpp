@@ -9,11 +9,12 @@ namespace gravity
     class Controller
     {
     private:
-        std::vector<MotorBase> motors;
-        std::shared_ptr<MotorConfig> motor_config;
-        std::shared_ptr<EthercatMaster> master;
-        std::shared_ptr<spdlog::logger> _log;
         std::vector<uint8_t> enabled = {1};
+        std::shared_ptr<EthercatMaster> master;
+        std::shared_ptr<MotorConfig> motor_config;
+        std::vector<std::unique_ptr<MotorBase>> motors;
+
+        std::shared_ptr<spdlog::logger> _log;
 
     public:
         explicit Controller();

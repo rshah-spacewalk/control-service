@@ -62,7 +62,7 @@ namespace gravity
     };
 
     template <typename T>
-    class DictionaryEntry : public DictionaryEntity
+    class DataObject : public DictionaryEntity
     {
         static_assert(
             std::is_same_v<T, uint8_t> || std::is_same_v<T, int8_t> ||
@@ -90,7 +90,7 @@ namespace gravity
         }
 
     public:
-        DictionaryEntry(
+        DataObject(
             std::string name,
             const uint16_t index,
             const uint8_t subindex,
@@ -110,12 +110,11 @@ namespace gravity
         }
 
         // Getter & Setters --------
-
+        T &getValue() noexcept { return value; }
+        void setValue(T new_value) { value = new_value; }
         const T &getMinValue() const noexcept { return min_value; }
         const T &getMaxValue() const noexcept { return max_value; }
         const T &getDefaultValue() const noexcept { return default_value; }
-        T &getValue() noexcept { return value; } // return a ref
-        void setValue(T new_value) { value = new_value; }
 
         const uint32_t getEntryKey() const override
         {

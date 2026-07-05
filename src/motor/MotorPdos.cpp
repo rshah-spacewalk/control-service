@@ -1,78 +1,73 @@
 #include "motor/Motor.hpp"
 
-std::vector<uint32_t> gravity::MotorBase::build_pdo_entries(const std::vector<std::string> &names) const
+void gravity::MotorBase::config_pdo_list()
 {
-    std::vector<uint32_t> entries;
-    entries.reserve(names.size());
+    // rx
+    rx_pdos.push_back(control_word.get());
+    rx_pdos.push_back(target_position.get());
+    rx_pdos.push_back(position_offset.get());
+    rx_pdos.push_back(velocity_offset.get());
+    rx_pdos.push_back(target_torque.get());
+    rx_pdos.push_back(torque_slope.get());
+    rx_pdos.push_back(mode_of_operation.get());
 
-    for (const auto &name : names)
-    {
-        if (auto it = dictionary_map.get_entries().find(name); it != dictionary_map.get_entries().end())
-        {
-            if (auto obj = it->second.get())
-            {
-                entries.push_back(obj->getEntryKey());
-            }
-            else
-            {
-                _log->warn("PDO entry '{}' found but is null!", name);
-            }
-        }
-        else
-        {
-            _log->warn("PDO entry '{}' not found in dictionary!", name);
-        }
-    }
-    return entries;
+    // tx
+    tx_pdos.push_back(error_code.get());
+    tx_pdos.push_back(status_word.get());
+    tx_pdos.push_back(position_actual_value.get());
+    tx_pdos.push_back(velocity_actual_value.get());
+    tx_pdos.push_back(torque_actual_value.get());
+    tx_pdos.push_back(following_error_actual_value.get());
+    tx_pdos.push_back(mode_of_operation_display.get());
+}
+
+std::vector<uint32_t> gravity::MotorBase::rx_pdo_entries() const
+{
+    std::vector<uint32_t> keys;
+    keys.reserve(rx_pdos.size());
+    for (const auto *e : rx_pdos)
+        keys.push_back(e->getEntryKey());
+    return keys;
+}
+
+std::vector<uint32_t> gravity::MotorBase::tx_pdo_entries() const
+{
+    std::vector<uint32_t> keys;
+    keys.reserve(tx_pdos.size());
+    for (const auto *e : tx_pdos)
+        keys.push_back(e->getEntryKey());
+    return keys;
 }
 
 std::vector<ec_pdo_entry_reg_t> gravity::MotorBase::get_domain_regs()
 {
     try
     {
+        size_t total_pdo_bytes = 0;
         std::vector<ec_pdo_entry_reg_t> regs;
-        regs.reserve(rx_pdo_list.size() + tx_pdo_list.size());
-        auto build_entries = [&](const std::vector<std::string> &names)
+        regs.reserve(rx_pdos.size() + tx_pdos.size());
+        auto build_entries = [&](const std::vector<DictionaryEntity *> &pdos)
         {
-            size_t total_pdo_bytes = 0;
-            for (const auto &name : names)
+            for (const auto &obj : pdos)
             {
-                if (auto obj = dictionary_map.get_entries().at(name).get())
-                {
-                    regs.push_back({alias,
-                                    position,
-                                    vendor_id,
-                                    product_code,
-                                    obj->getIndex(),
-                                    obj->getSubindex(),
-                                    &obj->getOffset()});
-                    total_pdo_bytes += obj->get_size_bytes();
-                }
-                else
-                {
-                    _log->warn("Dictionary entry '{}' not found!", name);
-                }
+                regs.push_back({alias,
+                                position,
+                                vendor_id,
+                                product_code,
+                                obj->getIndex(),
+                                obj->getSubindex(),
+                                &obj->getOffset()});
+                total_pdo_bytes += obj->get_size_bytes();
             }
-            // spdlog::info("Total pdo bytes: {}", total_pdo_bytes);
         };
+        _log->info("Total pdo bytes: {}", total_pdo_bytes);
 
-        build_entries(rx_pdo_list);
-        build_entries(tx_pdo_list);
-        _log->debug("Domain Registration Fetched");
+        build_entries(rx_pdos);
+        build_entries(tx_pdos);
         return regs;
     }
     catch (const std::exception &e)
     {
         throw std::runtime_error("Failed to get Domain Registration -> ");
     }
-}
-
-std::vector<uint32_t> gravity::MotorBase::rx_pdo_entries() const
-{
-    return build_pdo_entries(rx_pdo_list);
-}
-
-std::vector<uint32_t> gravity::MotorBase::tx_pdo_entries() const
-{
-    return build_pdo_entries(tx_pdo_list);
 }

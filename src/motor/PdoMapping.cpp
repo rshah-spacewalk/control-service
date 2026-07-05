@@ -68,12 +68,12 @@ void gravity::MotorConfig::map_pdos()
 {
     try
     {
-        for (const MotorBase &motor : motors)
+        for (const auto &motor : motors)
         {
-            if (std::find(enabled.begin(), enabled.end(), motor.position) != enabled.end())
+            if (std::find(enabled.begin(), enabled.end(), motor->position) != enabled.end())
             {
-                _log->info("Mapping PDOs for Motor {}", motor.position);
-                map_custom_pdo(motor.position, motor.rx_pdo_entries(), motor.tx_pdo_entries());
+                _log->info("Mapping PDOs for Motor {}", motor->position);
+                map_custom_pdo(motor->position, motor->rx_pdo_entries(), motor->tx_pdo_entries());
             }
         }
         std::vector<std::string> states = {"SAFEOP", "PREOP", "BOOT", "INIT", "PREOP"};

@@ -3,8 +3,17 @@
 gravity::Controller::Controller()
 {
     auto master = std::make_shared<gravity::EthercatMaster>("/dev/EtherCAT0");
-    motor_config = std::make_shared<gravity::MotorConfig>(master, motors, enabled);
     master->request_master();
+
+    std::vector<gravity::MotorBase *> out;
+    out.reserve(motors.size());
+    for (const auto &m : motors)
+    {
+        out.push_back(m.get());
+    }
+
+    motor_config = std::make_shared<gravity::MotorConfig>(out, enabled, master);
+
     _log->info("Initialized!");
 }
 

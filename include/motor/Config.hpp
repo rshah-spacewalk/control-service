@@ -21,15 +21,15 @@ namespace gravity
     {
     private:
         std::vector<uint8_t> enabled;
-        std::vector<MotorBase> motors;
+        std::vector<MotorBase *> motors;
         std::shared_ptr<EthercatMaster> master;
         std::shared_ptr<spdlog::logger> _log;
 
     public:
         explicit MotorConfig(
-            const std::shared_ptr<EthercatMaster> &_master,
-            std::vector<MotorBase> &_motors,
-            const std::vector<uint8_t> &_enabled)
+            std::vector<MotorBase *> _motors,
+            const std::vector<uint8_t> &_enabled,
+            const std::shared_ptr<EthercatMaster> &_master)
             : master(_master), motors(_motors), enabled(_enabled),
               _log(make_class_logger("MotorConfig"))
         {
