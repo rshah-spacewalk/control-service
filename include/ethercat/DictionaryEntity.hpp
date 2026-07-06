@@ -58,8 +58,8 @@ namespace gravity
 
         virtual const size_t get_size_bytes() const = 0;
 
-        virtual void read_from_domain(const uint8_t *domain) noexcept = 0;
-        virtual void write_to_domain(uint8_t *domain) const noexcept = 0;
+        virtual void read_from_domain(const uint8_t *domain) = 0;
+        virtual void write_to_domain(uint8_t *domain) const = 0;
     };
 
     template <typename T>
@@ -153,54 +153,68 @@ namespace gravity
             return sizeof(T);
         }
 
-        void read_from_domain(const uint8_t *domain) noexcept override
+        void read_from_domain(const uint8_t *domain) override
         {
-            const uint8_t *p = domain + offset;
-            // 8 bit
-            if constexpr (std::is_same_v<T, uint8_t>)
-                value = EC_READ_U8(p);
-            else if constexpr (std::is_same_v<T, int8_t>)
-                value = EC_READ_S8(p);
-            // 16 bit
-            else if constexpr (std::is_same_v<T, uint16_t>)
-                value = EC_READ_U16(p);
-            else if constexpr (std::is_same_v<T, int16_t>)
-                value = EC_READ_S16(p);
-            // 32 bit
-            else if constexpr (std::is_same_v<T, uint32_t>)
-                value = EC_READ_U32(p);
-            else if constexpr (std::is_same_v<T, int32_t>)
-                value = EC_READ_S32(p);
-            // 64 bit
-            else if constexpr (std::is_same_v<T, uint64_t>)
-                value = EC_READ_U64(p);
-            else if constexpr (std::is_same_v<T, int64_t>)
-                value = EC_READ_S64(p);
+            if (domain != nullptr)
+            {
+                const uint8_t *p = domain + offset;
+                // 8 bit
+                if constexpr (std::is_same_v<T, uint8_t>)
+                    value = EC_READ_U8(p);
+                else if constexpr (std::is_same_v<T, int8_t>)
+                    value = EC_READ_S8(p);
+                // 16 bit
+                else if constexpr (std::is_same_v<T, uint16_t>)
+                    value = EC_READ_U16(p);
+                else if constexpr (std::is_same_v<T, int16_t>)
+                    value = EC_READ_S16(p);
+                // 32 bit
+                else if constexpr (std::is_same_v<T, uint32_t>)
+                    value = EC_READ_U32(p);
+                else if constexpr (std::is_same_v<T, int32_t>)
+                    value = EC_READ_S32(p);
+                // 64 bit
+                else if constexpr (std::is_same_v<T, uint64_t>)
+                    value = EC_READ_U64(p);
+                else if constexpr (std::is_same_v<T, int64_t>)
+                    value = EC_READ_S64(p);
+            }
+            else
+            {
+                throw std::runtime_error("Domain ptr null");
+            }
         }
 
-        void write_to_domain(uint8_t *domain) const noexcept override
+        void write_to_domain(uint8_t *domain) const override
         {
-            uint8_t *p = domain + offset;
-            // 8 bit
-            if constexpr (std::is_same_v<T, uint8_t>)
-                EC_WRITE_U8(p, value);
-            else if constexpr (std::is_same_v<T, int8_t>)
-                EC_WRITE_S8(p, value);
-            // 16 bit
-            else if constexpr (std::is_same_v<T, uint16_t>)
-                EC_WRITE_U16(p, value);
-            else if constexpr (std::is_same_v<T, int16_t>)
-                EC_WRITE_S16(p, value);
-            // 32 bit
-            else if constexpr (std::is_same_v<T, uint32_t>)
-                EC_WRITE_U32(p, value);
-            else if constexpr (std::is_same_v<T, int32_t>)
-                EC_WRITE_S32(p, value);
-            // 64 bit
-            else if constexpr (std::is_same_v<T, uint64_t>)
-                EC_WRITE_U64(p, value);
-            else if constexpr (std::is_same_v<T, int64_t>)
-                EC_WRITE_S64(p, value);
+            if (domain != nullptr)
+            {
+                uint8_t *p = domain + offset;
+                // 8 bit
+                if constexpr (std::is_same_v<T, uint8_t>)
+                    EC_WRITE_U8(p, value);
+                else if constexpr (std::is_same_v<T, int8_t>)
+                    EC_WRITE_S8(p, value);
+                // 16 bit
+                else if constexpr (std::is_same_v<T, uint16_t>)
+                    EC_WRITE_U16(p, value);
+                else if constexpr (std::is_same_v<T, int16_t>)
+                    EC_WRITE_S16(p, value);
+                // 32 bit
+                else if constexpr (std::is_same_v<T, uint32_t>)
+                    EC_WRITE_U32(p, value);
+                else if constexpr (std::is_same_v<T, int32_t>)
+                    EC_WRITE_S32(p, value);
+                // 64 bit
+                else if constexpr (std::is_same_v<T, uint64_t>)
+                    EC_WRITE_U64(p, value);
+                else if constexpr (std::is_same_v<T, int64_t>)
+                    EC_WRITE_S64(p, value);
+            }
+            else
+            {
+                throw std::runtime_error("Domain ptr null");
+            }
         }
     };
 

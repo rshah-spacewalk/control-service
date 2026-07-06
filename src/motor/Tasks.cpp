@@ -87,21 +87,24 @@ void gravity::MotorBase::quick_stop_to_running()
 
 void gravity::MotorBase::cycle(uint8_t *domain_pdm)
 {
-    // rx
-    control_word->write_to_domain(domain_pdm);
-    target_position->write_to_domain(domain_pdm);
-    position_offset->write_to_domain(domain_pdm);
-    velocity_offset->write_to_domain(domain_pdm);
-    target_torque->write_to_domain(domain_pdm);
-    torque_slope->write_to_domain(domain_pdm);
-    mode_of_operation->write_to_domain(domain_pdm);
+    if (domain_pdm != nullptr)
+    {
+        // rx
+        control_word->write_to_domain(domain_pdm);
+        target_position->write_to_domain(domain_pdm);
+        position_offset->write_to_domain(domain_pdm);
+        velocity_offset->write_to_domain(domain_pdm);
+        target_torque->write_to_domain(domain_pdm);
+        torque_slope->write_to_domain(domain_pdm);
+        mode_of_operation->write_to_domain(domain_pdm);
 
-    // tx
-    error_code->read_from_domain(domain_pdm);
-    status_word->read_from_domain(domain_pdm);
-    position_actual_value->read_from_domain(domain_pdm);
-    velocity_actual_value->read_from_domain(domain_pdm);
-    torque_actual_value->read_from_domain(domain_pdm);
-    following_error_actual_value->read_from_domain(domain_pdm);
-    mode_of_operation_display->read_from_domain(domain_pdm);
+        // tx
+        error_code->read_from_domain(domain_pdm);
+        status_word->read_from_domain(domain_pdm);
+        position_actual_value->read_from_domain(domain_pdm);
+        velocity_actual_value->read_from_domain(domain_pdm);
+        torque_actual_value->read_from_domain(domain_pdm);
+        following_error_actual_value->read_from_domain(domain_pdm);
+        mode_of_operation_display->read_from_domain(domain_pdm);
+    }
 }

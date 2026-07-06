@@ -53,8 +53,8 @@ namespace gravity
         T upload_data = from_little_endian_bytes<T>(upload_buffer);
         return upload_data;
 
-        // _log->debug("SDO READ [{} : {:#x} : {:#x}] -> {:#x} == {} == {}",
-        //             slave_position, index, subindex, upload_data, upload_data, to_binary_string(upload_data));
+        spdlog::debug("SDO READ [{} : {:#x} : {:#x}] -> {:#x} == {} == {}",
+                      slave_position, index, subindex, upload_data, upload_data, to_binary_string(upload_data));
     }
 
     template <typename T>
@@ -89,8 +89,8 @@ namespace gravity
             throw std::runtime_error(msg);
         }
 
-        // _log->debug("SDO WRITE [{} : {:#x} : {:#x}] -> {:#x} == {} == {}", slave_position, index, subindex, value,
-        //             value, to_binary_string(value));
+        spdlog::debug("SDO WRITE [{} : {:#x} : {:#x}] -> {:#x} == {} == {}", slave_position, index, subindex, value,
+                      value, to_binary_string(value));
     }
 
 }

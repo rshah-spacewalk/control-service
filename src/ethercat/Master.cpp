@@ -64,6 +64,65 @@ bool gravity::EthercatMaster::create_domain()
     return true;
 }
 
+bool gravity::EthercatMaster::activate_master()
+{
+    try
+    {
+        if (ec_master_ptr == nullptr)
+        {
+            throw std::runtime_error("EtherCAT Master not found");
+            return false;
+        }
+
+        if (is_activated())
+        {
+            _log->warn("activate_master_cycle: already activated");
+            return true;
+        }
+
+        if (ecrt_master_activate(ec_master_ptr))
+        {
+            auto msg = fmt::format("Failed to activate master: {}", std::strerror(errno));
+            throw std::runtime_error(msg);
+        }
+        _log->info("EtherCAT Master Activated! Real-time operation starting");
+        return true;
+    }
+    catch (const std::exception &e)
+    {
+        auto msg = fmt::format("activate_cycle exception: {}", e.what());
+        throw std::runtime_error(msg);
+    }
+    return false;
+}
+
+bool gravity::EthercatMaster::deactivate_master()
+{
+    try
+    {
+        if (ec_master_ptr == nullptr)
+        {
+            _log->error("deactivate_master_cycle: EtherCAT Master not initialized");
+            return false;
+        }
+
+        if (!is_activated())
+        {
+            _log->warn("deactivate_master_cycle: master not active");
+            return true;
+        }
+
+        ecrt_master_deactivate(ec_master_ptr);
+        _log->info("EtherCAT Master Deactivated");
+        return true;
+    }
+    catch (const std::exception &e)
+    {
+        _log->error("deactivate_cycle exception: {}", e.what());
+    }
+    return false;
+}
+
 bool gravity::EthercatMaster::get_ec_master_info(ec_master_info_t &info)
 {
     if (ec_master_ptr == nullptr)

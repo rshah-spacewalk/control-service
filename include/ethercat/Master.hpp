@@ -34,6 +34,8 @@ namespace gravity
         bool request_master();
         bool release_master();
         bool create_domain();
+        bool activate_master();
+        bool deactivate_master();
 
         // ecrt_open_master(master_index) get master
         bool get_ec_master_info(ec_master_info_t &info);

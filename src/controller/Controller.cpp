@@ -33,28 +33,28 @@ bool gravity::Controller::setup(bool strict)
             throw std::runtime_error(err);
         }
 
-        // initialize motors
+        // initialize motors & config
         motors.clear();
+        motor_refs.clear();
+
         motors.reserve(info.slave_count);
+        motor_refs.reserve(info.slave_count);
+
         for (int i = 0; i < info.slave_count; i++)
         {
-            motors.push_back(std::make_unique<MotorBase>(master->ec_master_ptr, i));
+            motors.emplace_back(std::make_unique<MotorBase>(master->ec_master_ptr, i));
+            motor_refs.push_back(motors[i].get());
         }
 
-        // initialize config
-        std::vector<gravity::MotorBase *> motor_ref;
-        motor_ref.reserve(motors.size());
-        for (const auto &m : motors)
-        {
-            motor_ref.push_back(m.get());
-        }
-        motor_config = std::make_shared<gravity::MotorConfig>(motor_ref, master);
+        motor_config = std::make_shared<gravity::MotorConfig>(motor_refs, master);
         motor_config->apply_configs();
 
         // position setup
         for (int i = 0; i < motors.size(); i++)
         {
             motor_position[i] = motors[i]->position_actual_value->read_sdo();
+            handle_motor_status(motors[i]->status_word->read_sdo(), i);
+            handle_motor_error(motors[i]->error_code->read_sdo(), i);
         }
         _log->info("Current Position: {}", motor_position);
     }

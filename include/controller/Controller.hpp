@@ -11,30 +11,40 @@ namespace gravity
     private:
         const size_t DOF = 6;
         bool map_pdos{false};
-        std::array<double, 6> motor_position{};
+        uint32_t cycle_overun_count{0};
+
+        std::array<int32_t, 6> motor_position{};
+        std::array<uint16_t, 6> motor_status{};
+        std::array<uint16_t, 6> motor_error{};
+
+        std::thread cyclic_thread;
+        std::atomic_bool quick_stop_on{false};
+        std::atomic_bool cyclic_loop_active{false};
+
         std::shared_ptr<EthercatMaster> master;
         std::shared_ptr<MotorConfig> motor_config;
+        std::vector<gravity::MotorBase *> motor_refs;
         std::vector<std::unique_ptr<MotorBase>> motors;
 
         std::shared_ptr<spdlog::logger> _log;
 
+        bool config_cycle();
+        void cyclic_loop();
+
+        bool handle_motor_error(const uint16_t &error, const uint16_t &position);
+        bool handle_motor_status(const uint16_t &status, const uint16_t &position);
+
     public:
-        explicit Controller(bool _map_pdos = false);
+        explicit Controller(const bool _map_pdos);
 
         ~Controller();
 
+        bool setup(const bool strict);
         bool enable();
         bool disable();
-        bool config_cycle();
 
         bool quick_stop();
         bool release_quick_stop();
-
-        bool handle_error();
-        bool handle_status_word();
-
-        bool setup(bool strict = true);
-        bool loop();
     };
 }
 

@@ -1,35 +1,5 @@
 #include "motor/Config.hpp"
 
-void gravity::MotorConfig::register_pdos_to_domain()
-{
-    try
-    {
-        std::vector<ec_pdo_entry_reg_t> all_regs;
-        for (auto &motor : motors)
-        {
-            auto regs = motor->get_domain_regs();
-            all_regs.insert(all_regs.end(), regs.begin(), regs.end());
-        }
-
-        all_regs.push_back({}); // End marker
-        int resp = ecrt_domain_reg_pdo_entry_list(master->ec_domain_ptr, all_regs.data());
-        if (resp)
-        {
-            auto msg = (fmt::format("Motor PDO Registration failed: {}", resp));
-            throw std::runtime_error(msg);
-        }
-        else
-        {
-            _log->info("Successfully registered PDOs");
-        }
-    }
-    catch (const std::exception &e)
-    {
-        auto msg = (fmt::format("Motor PDO Registration failed: {}", e.what()));
-        throw std::runtime_error(msg);
-    }
-}
-
 void gravity::MotorConfig::apply_configs()
 {
     try
@@ -112,6 +82,7 @@ void gravity::MotorConfig::reset_encoder()
 {
     for (const auto &motor : motors)
     {
+        // Absolute Encoder settings, 9: Clear multiturn position, reset multiturn alarm and activate multiturn absolute function
         sdo_write<uint32_t>(motor->position, 0x2015, 0x0, 0x9);
     }
     _log->info("Encoder position reset done!");

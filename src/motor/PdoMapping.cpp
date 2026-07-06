@@ -86,3 +86,36 @@ void gravity::MotorConfig::map_pdos()
         throw std::runtime_error(msg);
     }
 }
+
+void gravity::MotorConfig::register_pdos_to_domain()
+{
+    try
+    {
+        std::vector<ec_pdo_entry_reg_t> all_regs;
+        for (auto &motor : motors)
+        {
+            auto regs = motor->get_domain_regs();
+            all_regs.insert(all_regs.end(), regs.begin(), regs.end());
+        }
+
+        all_regs.push_back({}); // End marker
+
+        _log->info("ecrt_domain_reg_pdo_entry_list size: {}", all_regs.size());
+
+        int resp = ecrt_domain_reg_pdo_entry_list(master->ec_domain_ptr, all_regs.data());
+        if (resp)
+        {
+            auto msg = (fmt::format("Motor PDO Registration failed: {}, try pdo mapping first", resp));
+            throw std::runtime_error(msg);
+        }
+        else
+        {
+            _log->info("Successfully registered PDOs");
+        }
+    }
+    catch (const std::exception &e)
+    {
+        // throw
+        throw;
+    }
+}

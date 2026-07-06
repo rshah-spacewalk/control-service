@@ -7,7 +7,7 @@
 namespace gravity::config::kepler
 {
     inline constexpr size_t DOF = 6;
-    inline constexpr int PDO_INTERVAL = 500; // microsecond, only multiplier of 250us.
+    inline constexpr int PDO_INTERVAL = 1000; // microsecond, only multiplier of 250us.
     inline const char *ETH_DEVICE = "/dev/EtherCAT0";
 
     // Joint settings -------------------------------------------------------------------------------/

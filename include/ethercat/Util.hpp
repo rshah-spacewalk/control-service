@@ -73,4 +73,5 @@ namespace gravity
             << val;
         return oss.str();
     }
+
 } // namespace gravity

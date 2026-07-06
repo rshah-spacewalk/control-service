@@ -43,11 +43,12 @@ std::vector<ec_pdo_entry_reg_t> gravity::MotorBase::get_domain_regs()
 {
     try
     {
-        size_t total_pdo_bytes = 0;
+        _log->info("Fetching domain registrations");
         std::vector<ec_pdo_entry_reg_t> regs;
         regs.reserve(rx_pdos.size() + tx_pdos.size());
-        auto build_entries = [&](const std::vector<DictionaryEntity *> &pdos)
+        auto build_entries = [&](const std::vector<DictionaryEntity *> &pdos) -> size_t
         {
+            size_t total_pdo_bytes = 0;
             for (const auto &obj : pdos)
             {
                 regs.push_back({alias,
@@ -57,17 +58,19 @@ std::vector<ec_pdo_entry_reg_t> gravity::MotorBase::get_domain_regs()
                                 obj->getIndex(),
                                 obj->getSubindex(),
                                 &obj->getOffset()});
+
+                // _log->info("Reg entry: alias={} pos={} vendor=0x{:x} product=0x{:x} idx=0x{:x}:{}",
+                //            alias, position, vendor_id, product_code, obj->getIndex(), obj->getSubindex());
                 total_pdo_bytes += obj->get_size_bytes();
             }
+            return total_pdo_bytes;
         };
-        _log->info("Total pdo bytes: {}", total_pdo_bytes);
-
-        build_entries(rx_pdos);
-        build_entries(tx_pdos);
+        auto total = build_entries(rx_pdos) + build_entries(tx_pdos);
+        _log->info("Total pdo entries bytes: {}", total);
         return regs;
     }
     catch (const std::exception &e)
     {
-        throw std::runtime_error("Failed to get Domain Registration -> ");
+        throw std::runtime_error("Failed to get Domain Registration");
     }
 }
