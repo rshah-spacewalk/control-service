@@ -24,7 +24,8 @@ void gravity::Controller::cyclic_loop()
             for (int i = 0; i < motors.size(); i++)
             {
                 handle_motor_error(motors[i]->error_code->read_pdo(), i);
-                handle_motor_status(motors[i]->status_word->read_pdo(), i);
+                handle_motor_status(motors[i]->status_word->read_pdo(), i); 
+                // use rounding for double to int32_t 
 
                 //     // write gear pulses
                 //     // double motor_pos_pulse = gravity::config::kepler::rad_to_gear_pulse(task_manager->get_position()[i], i);
