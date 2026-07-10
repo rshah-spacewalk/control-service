@@ -4,6 +4,11 @@ project(mover VERSION 0.0.1)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+
+find_package(gRPC CONFIG REQUIRED)
+find_package(gravity_util_lib CONFIG REQUIRED)
+find_package(gravity_routine_lib CONFIG REQUIRED)
+
 # ethercat -------------------------------
 
 find_library(EtherCAT_LIBRARY
@@ -23,10 +28,8 @@ if(NOT TARGET EtherLab::ethercat)
         IMPORTED_LOCATION "${EtherCAT_LIBRARY}"
     )
 endif()
-
 #-------------------------------------------
 
-find_package(gravity_util_lib CONFIG REQUIRED)
 
 file(GLOB_RECURSE SRC_FILES src/*.cpp)
 
@@ -39,6 +42,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME} PUBLIC
     EtherLab::ethercat
     gravity::gravity_util_lib
+    gravity::gravity_routine_lib
 
 )
 
