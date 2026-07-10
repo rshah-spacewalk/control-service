@@ -1,4 +1,5 @@
 #include "controller/Controller.hpp"
+#include "Controller.hpp"
 
 bool gravity::Controller::quick_stop()
 {
@@ -21,3 +22,4 @@ bool gravity::Controller::release_quick_stop()
     _log->warn("Motors Quick Stop Released");
     return true;
 }
+

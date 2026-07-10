@@ -1,10 +1,12 @@
 #pragma once
 
-#include <mutex> 
+#include <mutex>
 #include "ethercat/Master.hpp"
 #include "motor/Motor.hpp"
 #include "motor/Config.hpp"
 #include "controller/MoverConfig.hpp"
+
+#include <gravity/pubsub/Machine.hpp> // for jointstate
 
 namespace gravity
 {
@@ -26,7 +28,7 @@ namespace gravity
         std::vector<gravity::MotorBase *> motor_refs;
         std::vector<std::unique_ptr<MotorBase>> motors;
 
-        std::mutex cycle_mtx; 
+        std::mutex cycle_mtx;
         std::thread cyclic_thread;
         std::atomic_bool quick_stop_on{false};
         std::atomic_bool cyclic_loop_active{false};
@@ -54,9 +56,12 @@ namespace gravity
 
         bool quick_stop();
         bool release_quick_stop();
-        std::array<int32_t, 6> &fetch_current_pos() { return current_position_pulse; }
+
+        std::array<int32_t, 6> fetch_current_pos() const { return current_position_pulse; }
 
         std::atomic_bool allow_publishing{false};
+
+        bool fetch_current_state(msg::MachineStateInfo &machine_info, msg::JointStateInfo &joint_info);
     };
 }
 

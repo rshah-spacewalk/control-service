@@ -10,6 +10,7 @@ int main()
 {
     try
     {
+        // "/home/ravi/libs/gravity_libs/assets/conf/config.yaml"
         YAML::Node config = YAML::LoadFile("/home/ravi/libs/gravity_libs/assets/conf/config.yaml");
         auto params = config["trajectory_conf"].as<gravity::trajectory_params>();
 
