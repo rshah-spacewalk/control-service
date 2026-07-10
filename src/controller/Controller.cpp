@@ -66,14 +66,15 @@ bool gravity::Controller::setup(bool strict)
         // position setup
         for (int i = 0; i < motors.size(); i++)
         {
-            current_motor_position_pulse[i] = motors[i]->position_actual_value->read_sdo();
+            current_position_pulse[i] = motors[i]->position_actual_value->read_sdo();
             handle_motor_status(motors[i]->status_word->read_sdo(), i);
             handle_motor_error(motors[i]->error_code->read_sdo(), i);
-            double rad = config::gear_pulse_to_rad(current_motor_position_pulse[i], active_joints[i]);
+
+            double rad = config::gear_pulse_to_rad(current_position_pulse[i], active_joints[i]);
             int32_t rad_to_pulse = config::rad_to_gear_pulse<int32_t>(rad, active_joints[i]);
             _log->info(" rad {} to pulse {}", rad, rad_to_pulse);
         }
-        _log->info("Current Position: {}", current_motor_position_pulse);
+        _log->info("Current Position: {}", current_position_pulse);
     }
 
     _log->info("Setup completed");

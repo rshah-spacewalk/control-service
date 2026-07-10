@@ -1,14 +1,14 @@
 #pragma once
 
+#include <mutex> 
 #include "ethercat/Master.hpp"
 #include "motor/Motor.hpp"
 #include "motor/Config.hpp"
 #include "controller/MoverConfig.hpp"
-#include <gravity/models/MachineInterface.hpp>
 
 namespace gravity
 {
-    class Controller final : public ClientInterface
+    class Controller
     {
     private:
         bool map_pdos{false};
@@ -20,12 +20,13 @@ namespace gravity
         std::array<uint16_t, 6> motor_error{};
         std::array<uint16_t, 6> motor_status{};
         const std::vector<uint16_t> active_joints;
-        std::array<int32_t, 6> current_motor_position_pulse{};
+        std::array<int32_t, 6> current_position_pulse{};
 
         std::shared_ptr<MotorConfig> motor_config;
         std::vector<gravity::MotorBase *> motor_refs;
         std::vector<std::unique_ptr<MotorBase>> motors;
 
+        std::mutex cycle_mtx; 
         std::thread cyclic_thread;
         std::atomic_bool quick_stop_on{false};
         std::atomic_bool cyclic_loop_active{false};
@@ -34,6 +35,7 @@ namespace gravity
 
         bool config_cycle();
         void cyclic_loop();
+        void cycle(const std::array<int32_t, 6> &target_pos_pulse);
 
         bool handle_motor_error(const uint16_t &error, const uint16_t &position);
         bool handle_motor_status(const uint16_t &status, const uint16_t &position);
@@ -52,6 +54,7 @@ namespace gravity
 
         bool quick_stop();
         bool release_quick_stop();
+        std::array<int32_t, 6> &fetch_current_pos() { return current_position_pulse; }
 
         std::atomic_bool allow_publishing{false};
     };
@@ -59,3 +62,4 @@ namespace gravity
 
 // contructor order : top -> bottom
 // destructor order : bottom -> top
+// find ~/vcpkg/installed/arm64-linux-release -iname "*DomainParticipant*"

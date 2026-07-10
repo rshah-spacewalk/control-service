@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(gravity_util_lib CONFIG REQUIRED)
+find_package(gravity_comms_lib CONFIG REQUIRED)
 find_package(gravity_routine_lib CONFIG REQUIRED)
 
 # ethercat -------------------------------
@@ -39,7 +40,13 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
     EtherLab::ethercat
+
+    CycloneDDS::ddsc
+    CycloneDDS-CXX::ddscxx
+    iceoryx_binding_c::iceoryx_binding_c
+
     gravity::gravity_util_lib
+    gravity::gravity_comms_lib
     gravity::gravity_routine_lib
 
 )

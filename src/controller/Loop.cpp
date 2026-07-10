@@ -2,54 +2,15 @@
 
 void gravity::Controller::cyclic_loop()
 {
-    uint8_t *domain_pdm = ecrt_domain_data(master->ec_domain_ptr);
+
     gravity::Clock interval = gravity::Clock::fromMicroseconds(config::PDO_INTERVAL);
-
-    if (!domain_pdm)
-    {
-        _log->error("Failed to get domain process data pointer.");
-        return;
-    }
-
-    //
     while (cyclic_loop_active.load(std::memory_order_relaxed))
     {
         // execute task
         gravity::Clock start = gravity::Clock::now();
         try
         {
-            ecrt_master_receive(master->ec_master_ptr);
-            ecrt_domain_process(master->ec_domain_ptr);
-
-            for (int i = 0; i < motors.size(); i++)
-            {
-                handle_motor_error(motors[i]->error_code->read_pdo(), i);
-                handle_motor_status(motors[i]->status_word->read_pdo(), i);
-                // use rounding for double to int32_t
-
-                //     // write gear pulses
-                //     // double motor_pos_pulse = gravity::config::kepler::rad_to_gear_pulse(task_manager->get_position()[i], i);
-                //     // motors[i]->target_position->write_pdo(motor_pos_pulse);
-
-                //     motor_position[i] = motors[i]->position_actual_value->read_pdo();
-                // }
-
-                // if (!quick_stop_on.load(std::memory_order_relaxed))
-                // {
-                //     // // read radians
-                //     // gravity::routine::gear_pulse_to_radians(motor_position);
-                //     // task_manager->process_task_loop(motor_current_positions);
-
-                motors[i]->target_position->write_pdo(current_motor_position_pulse[i]);
-            }
-
-            // pdo cycle
-            for (auto &motor : motors)
-            {
-                motor->cycle(domain_pdm);
-            }
-            ecrt_domain_queue(master->ec_domain_ptr);
-            ecrt_master_send(master->ec_master_ptr);
+            cycle(current_position_pulse);
         }
         catch (const std::exception &e)
         {
@@ -61,7 +22,7 @@ void gravity::Controller::cyclic_loop()
         if (elapsed > interval)
         {
             auto delayed_us = (elapsed - interval).toMicroseconds();
-            _log->warn("PDO Cycle loop overran by {} us", delayed_us);
+            _log->warn("Cycle loop overran by {} us", delayed_us);
             cycle_overun_count++;
         }
         else
@@ -70,4 +31,52 @@ void gravity::Controller::cyclic_loop()
             remaining.sleepFor();
         }
     }
+}
+
+void gravity::Controller::cycle(const std::array<int32_t, 6> &target_position_pulse)
+{
+    // 0. lock
+    std::scoped_lock _lock(cycle_mtx);
+
+    // 1. get domain pointer
+    uint8_t *domain_pdm = ecrt_domain_data(master->ec_domain_ptr);
+    if (!domain_pdm)
+    {
+        _log->error("Failed to get domain process data pointer.");
+        return;
+    }
+
+    // 2. receive data
+    ecrt_master_receive(master->ec_master_ptr);
+    ecrt_domain_process(master->ec_domain_ptr);
+
+    // 3. read data
+    for (int i = 0; i < motors.size(); i++)
+    {
+        // 3.1 handle events
+        handle_motor_error(motors[i]->error_code->read_pdo(), i);
+        handle_motor_status(motors[i]->status_word->read_pdo(), i);
+
+        // 3.2 read position
+        current_position_pulse[i] = motors[i]->position_actual_value->read_pdo();
+    }
+
+    // 4. write data
+    for (int i = 0; i < motors.size(); i++)
+    {
+        if (!quick_stop_on.load(std::memory_order_relaxed))
+        {
+            motors[i]->target_position->write_pdo(target_position_pulse[i]);
+        }
+    }
+
+    // 5. pdo cycle
+    for (auto &motor : motors)
+    {
+        motor->cycle(domain_pdm);
+    }
+
+    // 6. send data
+    ecrt_domain_queue(master->ec_domain_ptr);
+    ecrt_master_send(master->ec_master_ptr);
 }
