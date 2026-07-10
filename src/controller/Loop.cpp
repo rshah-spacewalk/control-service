@@ -3,7 +3,7 @@
 void gravity::Controller::cyclic_loop()
 {
     uint8_t *domain_pdm = ecrt_domain_data(master->ec_domain_ptr);
-    gravity::Clock interval = gravity::Clock::fromMicroseconds(config::kepler::PDO_INTERVAL);
+    gravity::Clock interval = gravity::Clock::fromMicroseconds(config::PDO_INTERVAL);
 
     if (!domain_pdm)
     {
@@ -24,8 +24,8 @@ void gravity::Controller::cyclic_loop()
             for (int i = 0; i < motors.size(); i++)
             {
                 handle_motor_error(motors[i]->error_code->read_pdo(), i);
-                handle_motor_status(motors[i]->status_word->read_pdo(), i); 
-                // use rounding for double to int32_t 
+                handle_motor_status(motors[i]->status_word->read_pdo(), i);
+                // use rounding for double to int32_t
 
                 //     // write gear pulses
                 //     // double motor_pos_pulse = gravity::config::kepler::rad_to_gear_pulse(task_manager->get_position()[i], i);

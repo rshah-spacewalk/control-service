@@ -70,7 +70,7 @@ bool gravity::Controller::enable()
             }
 
             _log->info("Entering cyclic phase with cycle frequency: {} microseconds",
-                       config::kepler::PDO_INTERVAL);
+                       config::PDO_INTERVAL);
 
             // 2. enable master
             master->activate_master();

@@ -10,25 +10,27 @@ namespace gravity
     {
     private:
         int setup_delay_ms = 500;
+
         std::vector<DictionaryEntity *> rx_pdos;
         std::vector<DictionaryEntity *> tx_pdos;
         std::shared_ptr<spdlog::logger> _log = make_class_logger("Motor");
 
     public:
+        const uint16_t joint{};
         MotorBase(
             const uint16_t alias,
             const uint16_t position,
             const uint32_t vendor_id,
             const uint32_t product_code)
-            : SlaveBase(alias, position, vendor_id, product_code)
+            : SlaveBase(alias, position, vendor_id, product_code), joint(position)
         {
             _log->info(str());
             build_data_objects();
             config_pdo_list();
         }
 
-        MotorBase(ec_master_t *ec_master_ptr, int position)
-            : SlaveBase(ec_master_ptr, position)
+        MotorBase(ec_master_t *ec_master_ptr, uint16_t position, uint16_t _joint)
+            : SlaveBase(ec_master_ptr, position), joint(_joint)
         {
             _log->info(str());
             build_data_objects();
@@ -86,10 +88,11 @@ namespace gravity
         std::unique_ptr<DataObject<int16_t>> quick_stop_option_code = nullptr;   // 23
         std::unique_ptr<DataObject<uint32_t>> quick_stop_deceleration = nullptr; // 24
 
-        std::unique_ptr<DataObject<int32_t>> min_position_limit = nullptr; // 25
-        std::unique_ptr<DataObject<int32_t>> max_position_limit = nullptr; // 26
-        std::unique_ptr<DataObject<uint8_t>> polarity = nullptr;           // 27
-        std::unique_ptr<DataObject<uint32_t>> digital_inputs = nullptr;    // 28
+        std::unique_ptr<DataObject<int32_t>> min_position_limit = nullptr;        // 25
+        std::unique_ptr<DataObject<int32_t>> max_position_limit = nullptr;        // 26
+        std::unique_ptr<DataObject<uint8_t>> polarity = nullptr;                  // 27
+        std::unique_ptr<DataObject<uint32_t>> digital_inputs = nullptr;           // 28
+        std::unique_ptr<DataObject<uint32_t>> absolute_encoder_setting = nullptr; // 29
     };
 
 } // namespace gravity::mover

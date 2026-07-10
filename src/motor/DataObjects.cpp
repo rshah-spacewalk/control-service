@@ -51,4 +51,6 @@ void gravity::MotorBase::build_data_objects()
     max_position_limit = std::make_unique<DataObject<int32_t>>("max_position_limit", position, 0x607D, 0x02, I32_MIN, I32_MAX, 0, "Uint", MappingType::RX_PDO); // 26
     polarity = std::make_unique<DataObject<uint8_t>>("polarity", position, 0x607E, 0x0, U8_MIN, U8_MAX, 0x0, "_", MappingType::RX_PDO);                         // 27
     digital_inputs = std::make_unique<DataObject<uint32_t>>("digital_inputs", position, 0x60FD, 0x0, U32_MIN, I32_MAX, 0x0, "_", MappingType::TX_PDO);          // 28
+
+    absolute_encoder_setting = std::make_unique<DataObject<uint32_t>>("absolute_encoder_setting", position, 0x2015, 0x0, 0x0, I16_MAX, 0x0, "Unit", MappingType::NONE); // 29
 }

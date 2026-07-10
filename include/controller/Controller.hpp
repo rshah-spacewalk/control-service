@@ -3,13 +3,13 @@
 #include "ethercat/Master.hpp"
 #include "motor/Motor.hpp"
 #include "motor/Config.hpp"
+#include "controller/MoverConfig.hpp"
 
 namespace gravity
 {
     class Controller
     {
     private:
-        const size_t DOF = 6;
         bool map_pdos{false};
         uint32_t cycle_overun_count{0};
 
@@ -21,6 +21,7 @@ namespace gravity
         std::atomic_bool quick_stop_on{false};
         std::atomic_bool cyclic_loop_active{false};
 
+        trajectory_params params;
         std::shared_ptr<EthercatMaster> master;
         std::shared_ptr<MotorConfig> motor_config;
         std::vector<gravity::MotorBase *> motor_refs;
@@ -35,7 +36,7 @@ namespace gravity
         bool handle_motor_status(const uint16_t &status, const uint16_t &position);
 
     public:
-        explicit Controller(const bool _map_pdos);
+        explicit Controller(const trajectory_params &_params, const bool _map_pdos);
 
         ~Controller();
 

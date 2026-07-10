@@ -1,7 +1,7 @@
 #include "controller/Controller.hpp"
 
-gravity::Controller::Controller(bool _map_pdos)
-    : map_pdos(_map_pdos), _log(make_class_logger("Controller"))
+gravity::Controller::Controller(const trajectory_params &_params, const bool _map_pdos)
+    : params(_params), map_pdos(_map_pdos), _log(make_class_logger("Controller"))
 {
     master = std::make_shared<gravity::EthercatMaster>("/dev/EtherCAT0");
     master->request_master();
@@ -26,10 +26,10 @@ bool gravity::Controller::setup(bool strict)
         {
             throw std::runtime_error("No motor found");
         }
-        if (info.slave_count != DOF && strict)
+        if (info.slave_count != config::DOF && strict)
         {
             auto err = fmt::format("Motor count {} does not match dof {}",
-                                   info.slave_count, config::kepler::DOF);
+                                   info.slave_count, config::DOF);
             throw std::runtime_error(err);
         }
 
@@ -40,14 +40,17 @@ bool gravity::Controller::setup(bool strict)
         motors.reserve(info.slave_count);
         motor_refs.reserve(info.slave_count);
 
+        const uint16_t active_joint = 4;
+
         for (int i = 0; i < info.slave_count; i++)
         {
-            motors.emplace_back(std::make_unique<MotorBase>(master->ec_master_ptr, i));
+            motors.emplace_back(std::make_unique<MotorBase>(master->ec_master_ptr, i, active_joint));
             motor_refs.push_back(motors[i].get());
         }
 
-        motor_config = std::make_shared<gravity::MotorConfig>(motor_refs, master);
+        motor_config = std::make_shared<gravity::MotorConfig>(motor_refs, params, master);
         motor_config->apply_configs();
+        motor_config->read_configs();
 
         // position setup
         for (int i = 0; i < motors.size(); i++)

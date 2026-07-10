@@ -7,37 +7,24 @@ void gravity::MotorConfig::apply_configs()
         for (const auto &motor : motors)
         {
 
-            const uint32_t feed = motor->feed->read_sdo();
-            auto allowd_max_pos = config::kepler::rad_to_gear_pulse(config::kepler::MAX_JOINT_LIMITS[motor->position], motor->position);
-            auto allowd_min_pos = config::kepler::rad_to_gear_pulse(config::kepler::MIN_JOINT_LIMITS[motor->position], motor->position);
+            // 1. set direction
+            motor->polarity->write_sdo(config::MOTOR_DIR[motor->joint]);
 
-            motor->max_position_limit->write_sdo(allowd_max_pos);
-            motor->min_position_limit->write_sdo(allowd_min_pos);
-            motor->polarity->write_sdo(config::kepler::MOTOR_DIR[motor->position]);
+            // 2. set Direction & max position limits
+            auto allowed_max_pos = config::rad_to_gear_pulse<int32_t>(params.max_pos[motor->joint], motor->joint);
+            auto allowed_min_pos = config::rad_to_gear_pulse<int32_t>(params.min_pos[motor->joint], motor->joint);
 
-            const uint32_t encoder_mode = sdo_read<uint32_t>(motor->position, 0x2015, 0x0);
-            const uint32_t max_acl = motor->max_acceleration->read_sdo();
-            const uint32_t max_dcl = motor->max_deceleration->read_sdo();
-            const uint32_t max_speed = motor->max_motor_speed->read_sdo();
-            const int32_t max_pos = motor->max_position_limit->read_sdo();
-            const int32_t min_pos = motor->min_position_limit->read_sdo();
-            const uint8_t direction = motor->polarity->read_sdo();
-            const int32_t current_pos = motor->position_actual_value->read_sdo();
+            motor->max_position_limit->write_sdo(allowed_max_pos);
+            motor->min_position_limit->write_sdo(allowed_min_pos);
 
-            _log->info(
-                "------------------------------------------------------------\n"
-                "Motor Position      : {}\n"
-                "Encoder Mode        : {}\n"
-                "Feed Constant       : {}\n"
-                "Max Acceleration    : {}\n"
-                "Max Deceleration    : {}\n"
-                "Max Motor Speed     : {}\n"
-                "Max Position Limit  : {}\n"
-                "Min Position Limit  : {}\n"
-                "Direction           : {}\n"
-                "Position            : {}\n"
-                "------------------------------------------------------------\n",
-                motor->position, encoder_mode, feed, max_acl, max_dcl, max_speed, max_pos, min_pos, direction, current_pos);
+            // 3. set velocity
+            auto allowed_max_vel = config::rad_to_gear_pulse<uint32_t>(params.max_vel[motor->joint], motor->joint);
+            motor->max_motor_speed->write_sdo(allowed_max_vel);
+
+            // 4. set acceleration
+            auto allowed_max_acl = config::rad_to_gear_pulse<uint32_t>(params.max_acl[motor->joint], motor->joint);
+            motor->max_acceleration->write_sdo(allowed_max_acl);
+            motor->max_deceleration->write_sdo(allowed_max_acl);
         }
     }
     catch (const std::exception &e)
@@ -83,7 +70,9 @@ void gravity::MotorConfig::reset_encoder()
     for (const auto &motor : motors)
     {
         // Absolute Encoder settings, 9: Clear multiturn position, reset multiturn alarm and activate multiturn absolute function
-        sdo_write<uint32_t>(motor->position, 0x2015, 0x0, 0x9);
+        // sdo_write<uint32_t>(motor->position, 0x2015, 0x0, 0x9);
+        motor->absolute_encoder_setting->write_sdo(static_cast<uint32_t>(
+            AbsoluteEncoderMode::CLEAR_MULTI_TURN_POSITION_RESET_MULTI_TURN_ALARM_ACTIVATE_MULTI_TURN_ABSOLUTE));
     }
     _log->info("Encoder position reset done!");
 }

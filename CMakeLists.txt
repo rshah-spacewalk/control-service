@@ -4,8 +4,6 @@ project(mover VERSION 0.0.1)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
-find_package(gRPC CONFIG REQUIRED)
 find_package(gravity_util_lib CONFIG REQUIRED)
 find_package(gravity_routine_lib CONFIG REQUIRED)
 
