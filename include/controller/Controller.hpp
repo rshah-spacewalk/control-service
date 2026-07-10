@@ -4,16 +4,17 @@
 #include "motor/Motor.hpp"
 #include "motor/Config.hpp"
 #include "controller/MoverConfig.hpp"
+#include <gravity/models/MachineInterface.hpp>
 
 namespace gravity
 {
-    class Controller
+    class Controller final : public ClientInterface
     {
     private:
         bool map_pdos{false};
         uint32_t cycle_overun_count{0};
 
-           trajectory_params params;
+        trajectory_params params;
         std::shared_ptr<EthercatMaster> master;
 
         std::array<uint16_t, 6> motor_error{};

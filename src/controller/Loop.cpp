@@ -43,6 +43,7 @@ void gravity::Controller::cyclic_loop()
                 motors[i]->target_position->write_pdo(current_motor_position_pulse[i]);
             }
 
+            // pdo cycle
             for (auto &motor : motors)
             {
                 motor->cycle(domain_pdm);
