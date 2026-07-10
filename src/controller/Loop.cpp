@@ -2,7 +2,6 @@
 
 void gravity::Controller::cyclic_loop()
 {
-
     gravity::Clock interval = gravity::Clock::fromMicroseconds(config::PDO_INTERVAL);
     while (cyclic_loop_active.load(std::memory_order_relaxed))
     {
