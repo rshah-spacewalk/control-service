@@ -40,7 +40,7 @@ void gravity::Controller::cyclic_loop()
                 //     // gravity::routine::gear_pulse_to_radians(motor_position);
                 //     // task_manager->process_task_loop(motor_current_positions);
 
-                motors[i]->target_position->write_pdo(motor_position[i]);
+                motors[i]->target_position->write_pdo(current_motor_position_pulse[i]);
             }
 
             for (auto &motor : motors)

@@ -24,17 +24,18 @@ namespace gravity
             const uint32_t product_code)
             : SlaveBase(alias, position, vendor_id, product_code), joint(position)
         {
-            _log->info(str());
             build_data_objects();
             config_pdo_list();
+            _log->info(str());
         }
 
         MotorBase(ec_master_t *ec_master_ptr, uint16_t position, uint16_t _joint)
             : SlaveBase(ec_master_ptr, position), joint(_joint)
         {
-            _log->info(str());
+
             build_data_objects();
             config_pdo_list();
+            _log->info(str());
         }
 
         ~MotorBase()

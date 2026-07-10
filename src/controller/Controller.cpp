@@ -1,7 +1,13 @@
 #include "controller/Controller.hpp"
 
-gravity::Controller::Controller(const trajectory_params &_params, const bool _map_pdos)
-    : params(_params), map_pdos(_map_pdos), _log(make_class_logger("Controller"))
+gravity::Controller::Controller(
+    const trajectory_params &_params,
+    const std::vector<uint16_t> &_active_joints,
+    const bool _map_pdos)
+    : params(_params),
+      active_joints(_active_joints),
+      map_pdos(_map_pdos),
+      _log(make_class_logger("Controller"))
 {
     master = std::make_shared<gravity::EthercatMaster>("/dev/EtherCAT0");
     master->request_master();
@@ -34,17 +40,22 @@ bool gravity::Controller::setup(bool strict)
         }
 
         // initialize motors & config
+        if (active_joints.size() != info.slave_count)
+        {
+            auto err = fmt::format("Motor count {} does not match active joints count {}",
+                                   info.slave_count, active_joints.size());
+            throw std::runtime_error(err);
+        }
+
         motors.clear();
         motor_refs.clear();
 
         motors.reserve(info.slave_count);
         motor_refs.reserve(info.slave_count);
 
-        const uint16_t active_joint = 4;
-
         for (int i = 0; i < info.slave_count; i++)
         {
-            motors.emplace_back(std::make_unique<MotorBase>(master->ec_master_ptr, i, active_joint));
+            motors.emplace_back(std::make_unique<MotorBase>(master->ec_master_ptr, i, active_joints[i]));
             motor_refs.push_back(motors[i].get());
         }
 
@@ -55,14 +66,18 @@ bool gravity::Controller::setup(bool strict)
         // position setup
         for (int i = 0; i < motors.size(); i++)
         {
-            motor_position[i] = motors[i]->position_actual_value->read_sdo();
+            current_motor_position_pulse[i] = motors[i]->position_actual_value->read_sdo();
             handle_motor_status(motors[i]->status_word->read_sdo(), i);
             handle_motor_error(motors[i]->error_code->read_sdo(), i);
+            double rad = config::gear_pulse_to_rad(current_motor_position_pulse[i], active_joints[i]);
+            int32_t rad_to_pulse = config::rad_to_gear_pulse<int32_t>(rad, active_joints[i]);
+            _log->info(" rad {} to pulse {}", rad, rad_to_pulse);
         }
-        _log->info("Current Position: {}", motor_position);
+        _log->info("Current Position: {}", current_motor_position_pulse);
     }
 
     _log->info("Setup completed");
+    allow_publishing.store(true);
 
     return true;
 }

@@ -41,6 +41,7 @@ bool gravity::Controller::config_cycle()
 bool gravity::Controller::enable()
 {
     _log->info("Enabling Controller");
+    allow_publishing.store(false);
     try
     {
         if (master->is_activated())
@@ -86,18 +87,21 @@ bool gravity::Controller::enable()
                 _log->warn("Failed to set RT priority: {}", std::strerror(errno));
             }
             _log->warn("Cyclic thread started!");
+            allow_publishing.store(true);
         }
     }
     catch (const std::exception &e)
     {
         std::cerr << e.what() << '\n';
     }
+    allow_publishing.store(true);
     return false;
 }
 
 bool gravity::Controller::disable()
 {
     _log->info("Disabling Controller");
+    allow_publishing.store(false);
     try
     {
         if (master->is_activated())
@@ -138,10 +142,12 @@ bool gravity::Controller::disable()
         {
             _log->warn("Master not activated");
         }
+        allow_publishing.store(true);
     }
     catch (const std::exception &e)
     {
         std::cerr << e.what() << '\n';
     }
+    allow_publishing.store(true);
     return false;
 }
