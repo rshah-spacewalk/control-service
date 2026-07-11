@@ -7,3 +7,4 @@
 * encoder setting added to dataobjcts
 * motor config -> pos, vel, acl, dir 
 * Joint specific motor configs allowed 
+* mover app added on top of controller 

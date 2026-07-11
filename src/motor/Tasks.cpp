@@ -61,6 +61,7 @@ void gravity::MotorBase::quick_stop()
     catch (const std::exception &e)
     {
         _log->error("Quick stop failed for motor {} -> {}", position, e.what());
+        throw;
     }
 }
 
@@ -82,6 +83,7 @@ void gravity::MotorBase::quick_stop_to_running()
     catch (const std::exception &e)
     {
         _log->error("Quick stop -> Running failed for motor {} -> {}", position, e.what());
+        throw;
     }
 }
 
@@ -106,5 +108,9 @@ void gravity::MotorBase::cycle(uint8_t *domain_pdm)
         torque_actual_value->read_from_domain(domain_pdm);
         following_error_actual_value->read_from_domain(domain_pdm);
         mode_of_operation_display->read_from_domain(domain_pdm);
+    }
+    else
+    {
+        throw std::runtime_error("Domain data pointer null!");
     }
 }

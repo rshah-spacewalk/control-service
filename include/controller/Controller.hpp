@@ -31,8 +31,6 @@ namespace gravity
         std::mutex cycle_mtx;
         std::atomic_bool quick_stop_on{false};
 
-        std::atomic_bool allow_publishing{false};
-
         std::shared_ptr<spdlog::logger> _log;
 
         bool config_cycle();
@@ -48,8 +46,9 @@ namespace gravity
 
         ~Controller();
 
-        bool is_stopped() { return quick_stop_on.load(); }
         bool is_faulted();
+        bool is_stopped() { return quick_stop_on.load(); }
+        bool is_activated() { return master->is_activated(); }
 
         bool setup(const bool strict);
 

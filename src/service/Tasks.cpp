@@ -4,13 +4,32 @@ gravity::task_response_t gravity::App::cancel_task(const uint64_t &task_id)
 {
     task_response_t resp;
     resp.id = task_id;
-    resp.status = task_status_t::SUCCESS;
-    return resp;
+    try
+    {
+        resp.status = task_status_t::SUCCESS;
+        return resp;
+    }
+    catch (const std::exception &e)
+    {
+        _log->error("{}", e.what());
+        resp.status = task_status_t::ABORTED;
+        return resp;
+    }
 }
 
 gravity::task_response_t gravity::App::process_task(const task_request_t &task_request)
 {
     task_response_t resp;
+
+    // 1.throw error is controller is not enabled
+    if (!controller->is_activated())
+    {
+        resp.id = task_request.id;
+        resp.exception = task_exception_t::TARGET_NOT_FOUND;
+        return resp;
+    }
+
+    // 2. attempt to add task
     if (task_manager->add_task(task_request, resp))
     {
         _log->info("[{}] Processing Task", task_request.id);

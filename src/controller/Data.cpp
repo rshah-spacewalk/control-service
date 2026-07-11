@@ -2,11 +2,6 @@
 
 bool gravity::Controller::fetch_current_state(msg::MachineStateInfo &machine_info)
 {
-    if (!allow_publishing.load())
-    {
-        return false;
-    }
-
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     machine_info.ms(ms);
 

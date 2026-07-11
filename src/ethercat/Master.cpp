@@ -100,29 +100,21 @@ bool gravity::EthercatMaster::activate_master()
 
 bool gravity::EthercatMaster::deactivate_master()
 {
-    try
+    if (ec_master_ptr == nullptr)
     {
-        if (ec_master_ptr == nullptr)
-        {
-            _log->error("deactivate_master_cycle: EtherCAT Master not initialized");
-            return false;
-        }
+        _log->error("deactivate_master_cycle: EtherCAT Master not initialized");
+        return false;
+    }
 
-        if (!is_activated())
-        {
-            _log->warn("deactivate_master_cycle: master not active");
-            return true;
-        }
-
-        ecrt_master_deactivate(ec_master_ptr);
-        _log->info("EtherCAT Master Deactivated");
+    if (!is_activated())
+    {
+        _log->warn("deactivate_master_cycle: master not active");
         return true;
     }
-    catch (const std::exception &e)
-    {
-        _log->error("deactivate_cycle exception: {}", e.what());
-    }
-    return false;
+
+    ecrt_master_deactivate(ec_master_ptr);
+    _log->info("EtherCAT Master Deactivated");
+    return true;
 }
 
 bool gravity::EthercatMaster::get_ec_master_info(ec_master_info_t &info)

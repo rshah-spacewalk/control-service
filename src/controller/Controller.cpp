@@ -76,7 +76,6 @@ bool gravity::Controller::setup(bool strict)
     }
 
     _log->info("Setup completed");
-    allow_publishing.store(true);
 
     return true;
 }

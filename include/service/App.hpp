@@ -4,13 +4,15 @@
 #include <gravity/models/MachineInterface.hpp>
 #include <gravity/task/TaskManager.hpp>
 
+// handle all exceptions in app class only
+
 namespace gravity
 {
     class App final : public ClientInterface
     {
     private:
         // controller
-        const bool map_pdos = true;
+        const bool map_pdos = false;
         std::shared_ptr<Controller> controller;
         const std::vector<uint16_t> active_joints_indices = {4};
 
@@ -19,6 +21,7 @@ namespace gravity
         std::thread cyclic_thread;
         uint32_t cycle_overun_count{0};
         std::atomic_bool cyclic_loop_active{false};
+        std::atomic_bool allow_publishing{false};
 
         // task manager
         const trajectory_params params;
