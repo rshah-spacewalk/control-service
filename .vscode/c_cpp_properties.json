@@ -5,7 +5,9 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/opt/gravity/include/**",
-                "/home/ravi/vcpkg/installed/arm64-linux/include/**"
+                // "/home/ravi/vcpkg/installed/arm64-linux/include/**",
+                "/opt/drake/include/**",
+                "/home/ravi/vcpkg/installed/x64-linux/include/**"
             ],
             "defines": [],
             "cStandard": "c17",

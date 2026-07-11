@@ -30,12 +30,13 @@ bool gravity::Controller::setup(bool strict)
 
         if (info.slave_count == 0)
         {
-            throw std::runtime_error("No motor found");
+            throw std::runtime_error("Controller Error: No motor found");
         }
         if (info.slave_count != config::DOF && strict)
         {
             auto err = fmt::format("Motor count {} does not match dof {}",
                                    info.slave_count, config::DOF);
+            std::cout << err << std::endl;
             throw std::runtime_error(err);
         }
 
@@ -44,6 +45,7 @@ bool gravity::Controller::setup(bool strict)
         {
             auto err = fmt::format("Motor count {} does not match active joints count {}",
                                    info.slave_count, active_joints.size());
+            std::cout << err << std::endl;
             throw std::runtime_error(err);
         }
 
@@ -69,10 +71,6 @@ bool gravity::Controller::setup(bool strict)
             current_position_pulse[i] = motors[i]->position_actual_value->read_sdo();
             handle_motor_status(motors[i]->status_word->read_sdo(), i);
             handle_motor_error(motors[i]->error_code->read_sdo(), i);
-
-            double rad = config::gear_pulse_to_rad(current_position_pulse[i], active_joints[i]);
-            int32_t rad_to_pulse = config::rad_to_gear_pulse<int32_t>(rad, active_joints[i]);
-            _log->info(" rad {} to pulse {}", rad, rad_to_pulse);
         }
         _log->info("Current Position: {}", current_position_pulse);
     }

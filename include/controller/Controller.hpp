@@ -14,9 +14,9 @@ namespace gravity
     {
     private:
         bool map_pdos{false};
-        uint32_t cycle_overun_count{0};
-
         trajectory_params params;
+
+        uint8_t *domain_pdm{nullptr};
         std::shared_ptr<EthercatMaster> master;
 
         std::array<uint16_t, 6> motor_error{};
@@ -29,15 +29,13 @@ namespace gravity
         std::vector<std::unique_ptr<MotorBase>> motors;
 
         std::mutex cycle_mtx;
-        std::thread cyclic_thread;
         std::atomic_bool quick_stop_on{false};
-        std::atomic_bool cyclic_loop_active{false};
+
+        std::atomic_bool allow_publishing{false};
 
         std::shared_ptr<spdlog::logger> _log;
 
         bool config_cycle();
-        void cyclic_loop();
-        void cycle(const std::array<int32_t, 6> &target_pos_pulse);
 
         bool handle_motor_error(const uint16_t &error, const uint16_t &position);
         bool handle_motor_status(const uint16_t &status, const uint16_t &position);
@@ -50,18 +48,19 @@ namespace gravity
 
         ~Controller();
 
+        bool is_stopped() { return quick_stop_on.load(); }
+        bool is_faulted();
+
         bool setup(const bool strict);
+
         bool enable();
         bool disable();
 
         bool quick_stop();
         bool release_quick_stop();
 
-        std::array<int32_t, 6> fetch_current_pos() const { return current_position_pulse; }
-
-        std::atomic_bool allow_publishing{false};
-
-        bool fetch_current_state(msg::MachineStateInfo &machine_info, msg::JointStateInfo &joint_info);
+        bool fetch_current_state(msg::MachineStateInfo &machine_info);
+        std::array<double, 6> cycle(const std::array<double, 6> &target_pos_rad);
     };
 }
 

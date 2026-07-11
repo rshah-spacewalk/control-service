@@ -39,16 +39,18 @@ namespace gravity
 
         if (result_status != 0)
         {
-            auto msg = fmt::format("SDO upload failed for 0x{:x}:0x{:x}, status={}, abort=0x{:x}",
+            auto err = fmt::format("SDO upload failed for 0x{:x}:0x{:x}, status={}, abort=0x{:x}",
                                    index, subindex, result_status, abort_code);
-            throw std::runtime_error(msg);
+            std::cout << err << std::endl;
+            throw std::runtime_error(err);
         }
 
         if (result_size != size)
         {
-            auto msg = fmt::format("SDO size mismatch for 0x{:x}:0x{:x} (expected {}, got {})",
+            auto err = fmt::format("SDO size mismatch for 0x{:x}:0x{:x} (expected {}, got {})",
                                    index, subindex, size, result_size);
-            throw std::runtime_error(msg);
+            std::cout << err << std::endl;
+            throw std::runtime_error(err);
         }
         T upload_data = from_little_endian_bytes<T>(upload_buffer);
         return upload_data;
@@ -83,10 +85,11 @@ namespace gravity
 
         if (result != 0)
         {
-            auto msg = fmt::format(
+            auto err = fmt::format(
                 "SDO write failed: slave={}, index=0x{:04x}, subindex=0x{:02x}, abort=0x{:08x}, status={}",
                 slave_position, index, subindex, abort_code, result);
-            throw std::runtime_error(msg);
+            std::cout << err << std::endl;
+            throw std::runtime_error(err);
         }
 
         spdlog::debug("SDO WRITE [{} : {:#x} : {:#x}] -> {:#x} == {} == {}", slave_position, index, subindex, value,

@@ -15,7 +15,7 @@ namespace gravity
         TX_PDO,
         NONE
     };
-
+    // remove string varaibles
     class DictionaryEntity
     {
     protected:

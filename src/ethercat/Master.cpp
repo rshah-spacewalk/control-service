@@ -82,16 +82,18 @@ bool gravity::EthercatMaster::activate_master()
 
         if (ecrt_master_activate(ec_master_ptr))
         {
-            auto msg = fmt::format("Failed to activate master: {}", std::strerror(errno));
-            throw std::runtime_error(msg);
+            auto err = fmt::format("Failed to activate master: {}", std::strerror(errno));
+            std::cout << err << std::endl;
+            throw std::runtime_error(err);
         }
         _log->info("EtherCAT Master Activated! Real-time operation starting");
         return true;
     }
     catch (const std::exception &e)
     {
-        auto msg = fmt::format("activate_cycle exception: {}", e.what());
-        throw std::runtime_error(msg);
+        auto err = fmt::format("activate_cycle exception: {}", e.what());
+        std::cout << err << std::endl;
+        throw std::runtime_error(err);
     }
     return false;
 }
