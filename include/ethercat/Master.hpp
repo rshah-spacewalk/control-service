@@ -50,6 +50,35 @@ namespace gravity
     private:
         std::shared_ptr<spdlog::logger> _log;
     };
+
+    // utils
+
+    inline ec_master_t *get_master_ptr()
+    {
+        const uint16_t master_index = 0;
+        ec_master_t *master_ptr = ecrt_open_master(master_index);
+        if (master_ptr == nullptr)
+        {
+            throw std::runtime_error("Read Error: EC_MASTER invalid");
+        }
+        return master_ptr;
+    }
+
+    inline ec_master_state_t get_master_state()
+    {
+        ec_master_state_t state;
+        ec_master_t *master_ptr = get_master_ptr();
+        if (master_ptr == nullptr)
+        {
+            throw std::runtime_error("get_master_state: EtherCAT Master not found!");
+        }
+        if (ecrt_master_state(master_ptr, &state))
+        {
+            auto err = fmt::format("Failed to get master state: {}", std::strerror(errno));
+            throw std::runtime_error(err);
+        }
+        return state;
+    }
 }
 
 // ec_domain_state_t

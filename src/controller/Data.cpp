@@ -1,4 +1,5 @@
 #include "controller/Controller.hpp"
+#include "ethercat/EthStatus.hpp"
 
 bool gravity::Controller::fetch_current_state(msg::MachineStateInfo &machine_info)
 {

@@ -9,7 +9,7 @@ namespace gravity
     class MotorBase : public SlaveBase
     {
     private:
-        int setup_delay_ms = 500;
+        int setup_delay_ms = 100;
 
         std::vector<DictionaryEntity *> rx_pdos;
         std::vector<DictionaryEntity *> tx_pdos;
@@ -43,10 +43,10 @@ namespace gravity
             _log->info("Motor [{}] Released", position);
         }
 
-        void enable_cycle();
-        void disable_cycle();
+        void enable();
+        void disable();
         void quick_stop();
-        void quick_stop_to_running();
+        void release_quick_stop();
         void cycle(uint8_t *domain_pdm);
 
         void config_pdo_list();

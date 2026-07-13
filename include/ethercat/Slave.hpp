@@ -14,17 +14,6 @@ namespace gravity
     {
         std::shared_ptr<spdlog::logger> _log;
 
-        ec_master_t *get_master_ptr()
-        {
-            const uint16_t master_index = 0;
-            ec_master_t *master_ptr = ecrt_open_master(master_index);
-            if (master_ptr == nullptr)
-            {
-                throw std::runtime_error("Read Error: EC_MASTER invalid");
-            }
-            return master_ptr;
-        }
-
     public:
         uint16_t alias;
         uint16_t position;

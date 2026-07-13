@@ -133,19 +133,20 @@ namespace gravity
         void write_pdo(const T &new_value)
         {
             value = new_value;
+            // spdlog::info("SDO write [{} : 0x{:04X} : 0x{:02X}]", position, index, subindex);
         }
 
         T read_sdo()
         {
-            // spdlog::info("SDO read [{} : 0x{:04X} : 0x{:02X}]", position, index, subindex);
-            value = sdo_read<T>(position, index, subindex);
+            // spdlog::info("SDO read [{} : 0x{:04X} : 0x{:02X}] []", position, index, subindex);
+            int resp = sdo_read<T>(position, index, subindex, value);
             return value;
         }
 
-        void write_sdo(T new_value)
+        int write_sdo(T new_value)
         {
             checkRange(new_value);
-            sdo_write<T>(position, index, subindex, new_value);
+            return sdo_write<T>(position, index, subindex, new_value);
         }
 
         size_t const get_size_bytes() const override

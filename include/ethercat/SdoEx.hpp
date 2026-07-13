@@ -10,7 +10,7 @@
 namespace gravity
 {
     template <typename T>
-    T sdo_read(const uint16_t slave_position, const uint16_t index, const uint8_t subindex)
+    int sdo_read(const uint16_t slave_position, const uint16_t index, const uint8_t subindex, T &value)
     {
         // spdlog::info("SDO READ [{} : 0x{:04X} : 0x{:02X}]", slave_position, index, subindex);
 
@@ -52,15 +52,16 @@ namespace gravity
             std::cout << err << std::endl;
             throw std::runtime_error(err);
         }
-        T upload_data = from_little_endian_bytes<T>(upload_buffer);
-        return upload_data;
 
-        spdlog::debug("SDO READ [{} : {:#x} : {:#x}] -> {:#x} == {} == {}",
-                      slave_position, index, subindex, upload_data, upload_data, to_binary_string(upload_data));
+        // spdlog::debug("SDO READ [{} : {:#x} : {:#x}] -> {:#x} == {} == {}",
+        //               slave_position, index, subindex, upload_data, upload_data, to_binary_string(upload_data));
+
+        value = from_little_endian_bytes<T>(upload_buffer);
+        return result_status;
     }
 
     template <typename T>
-    void sdo_write(uint16_t slave_position, uint16_t index, uint8_t subindex, T value)
+    int sdo_write(uint16_t slave_position, uint16_t index, uint8_t subindex, T value)
     {
         // spdlog::info("SDO WRITE [{} : 0x{:04X} : 0x{:02X}]", slave_position, index, subindex);
 
@@ -94,6 +95,7 @@ namespace gravity
 
         spdlog::debug("SDO WRITE [{} : {:#x} : {:#x}] -> {:#x} == {} == {}", slave_position, index, subindex, value,
                       value, to_binary_string(value));
+        return result;
     }
 
 }

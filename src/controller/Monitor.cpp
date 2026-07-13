@@ -1,5 +1,6 @@
 #include "controller/Controller.hpp"
 #include "ethercat/EthEnums.hpp"
+#include "ethercat/EthStatus.hpp"
 
 // 603f
 bool gravity::Controller::handle_motor_error(const uint16_t &error, const uint16_t &position)
@@ -37,50 +38,29 @@ bool gravity::Controller::handle_motor_status(const uint16_t &status, const uint
     {
         status_word_entity sw = decode_status_word(status);
         _log->info("Status [{}] -> [{:#x}]", position, status);
+        _log->info("Status {}", status_word_str(status));
 
-        if (sw.servo_running)
-        {
-            _log->info("MotorStatus [{}] Servo Running", position);
-        }
+        // if (sw.servo_running)
+        // {
+        //     _log->info("MotorStatus [{}] Servo Running", position);
+        // }
 
-        if (sw.fault)
-        {
-            _log->error("MotorStatus [{}] Fault", position);
-        }
+        // if (sw.fault)
+        // {
+        //     _log->error("MotorStatus [{}] Fault", position);
+        // }
 
         // if (!sw.quick_stop)
         // {
         //     _log->warn("MotorStatus [{}] Quick Stop", position);
         // }
 
-        if (sw.arrived_at_position)
-        {
-            _log->info("MotorStatus [{}] Arrived at Position", position);
-        }
+        // if (sw.arrived_at_position)
+        // {
+        //     _log->info("MotorStatus [{}] Arrived at Position", position);
+        // }
     }
 
     motor_status[position] = status;
-    return true;
-}
-
-bool gravity::Controller::quick_stop()
-{
-    for (int i = 0; i < motors.size(); i++)
-    {
-        motors[i]->quick_stop();
-    }
-    quick_stop_on.store(true);
-    _log->warn("Motors Quick Stop");
-    return true;
-}
-
-bool gravity::Controller::release_quick_stop()
-{
-    for (int i = 0; i < motors.size(); i++)
-    {
-        motors[i]->quick_stop_to_running();
-    }
-    quick_stop_on.store(false);
-    _log->warn("Motors Quick Stop Released");
     return true;
 }
