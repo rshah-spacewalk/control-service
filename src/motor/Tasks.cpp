@@ -19,6 +19,7 @@ void gravity::MotorBase::enable_cycle()
             status_word->read_pdo();
         }
         _log->info("Motor {} set to RUNNING", position);
+        _log->info("Motor [{}] State: {}", position, al_state_str(get_slave_info().al_state));
     }
     catch (const std::exception &e)
     {
@@ -42,6 +43,7 @@ void gravity::MotorBase::disable_cycle()
             status_word->read_pdo();
         }
         _log->info("Motor {} set to FAULTLESS", position);
+        _log->info("Motor [{}] State: {}", position, al_state_str(get_slave_info().al_state));
     }
     catch (const std::exception &e)
     {

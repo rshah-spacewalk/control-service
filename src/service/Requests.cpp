@@ -2,6 +2,7 @@
 
 gravity::task_response_t gravity::App::enable(const uint64_t &task_id)
 {
+    allow_publishing.store(false);
     task_response_t resp{};
     resp.id = task_id;
 
@@ -32,11 +33,13 @@ gravity::task_response_t gravity::App::enable(const uint64_t &task_id)
         resp.status = task_status_t::ABORTED;
     }
 
+    allow_publishing.store(true);
     return resp;
 }
 
 gravity::task_response_t gravity::App::disable(const uint64_t &task_id)
 {
+    allow_publishing.store(false);
     task_response_t resp{};
     resp.id = task_id;
 
@@ -56,6 +59,7 @@ gravity::task_response_t gravity::App::disable(const uint64_t &task_id)
     {
         resp.status = task_status_t::ABORTED;
     }
+    allow_publishing.store(true);
     return resp;
 }
 

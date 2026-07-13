@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdint>
 #include <string>
+#include <gravity/Transforms.hpp>
 
 namespace gravity
 {
@@ -72,6 +73,11 @@ namespace gravity
             << std::setw(width) << std::setfill('0')
             << val;
         return oss.str();
+    }
+
+    inline std::string al_state_str(const uint8_t &al_state)
+    {
+        return util::tf::enum_str<ec_al_state_t>(static_cast<ec_al_state_t>(al_state));
     }
 
 } // namespace gravity

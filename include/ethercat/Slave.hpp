@@ -14,6 +14,17 @@ namespace gravity
     {
         std::shared_ptr<spdlog::logger> _log;
 
+        ec_master_t *get_master_ptr()
+        {
+            const uint16_t master_index = 0;
+            ec_master_t *master_ptr = ecrt_open_master(master_index);
+            if (master_ptr == nullptr)
+            {
+                throw std::runtime_error("Read Error: EC_MASTER invalid");
+            }
+            return master_ptr;
+        }
+
     public:
         uint16_t alias;
         uint16_t position;
@@ -36,7 +47,6 @@ namespace gravity
         SlaveBase(ec_master_t *ec_master_ptr, int position)
         {
             _log = make_class_logger("SlaveBase");
-
             ec_slave_info_t _ec_slave_info{};
             if (ecrt_master_get_slave(ec_master_ptr, position, &_ec_slave_info) != 0)
             {
@@ -52,19 +62,19 @@ namespace gravity
             }
         }
 
-        ec_slave_info_t get_info(ec_master_t *ec_master_ptr)
+        ec_slave_info_t get_slave_info()
         {
-            if (ecrt_master_get_slave(ec_master_ptr, position, &ec_slave_info) != 0)
+            if (ecrt_master_get_slave(get_master_ptr(), position, &ec_slave_info) != 0)
             {
                 _log->error("Failed to get info for slave index {}", position);
             }
             return ec_slave_info;
         }
 
-        ec_slave_config_t *get_slave_config_ptr(ec_master_t *ec_master_ptr)
+        ec_slave_config_t *get_slave_config_ptr()
         {
             ec_slave_config_t *cfg = ecrt_master_slave_config(
-                ec_master_ptr,
+                get_master_ptr(),
                 ec_slave_info.alias,
                 ec_slave_info.position,
                 ec_slave_info.vendor_id,

@@ -35,7 +35,7 @@ namespace gravity
 
             build_data_objects();
             config_pdo_list();
-            _log->info(str());
+            // _log->info(str());
         }
 
         ~MotorBase()

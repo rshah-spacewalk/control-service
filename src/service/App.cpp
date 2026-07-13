@@ -22,6 +22,7 @@ gravity::App::App(const std::string &conf, const std::string &urdf)
             machine_info.joint_state().position(),
             spdlog::level::debug);
     }
+    allow_publishing.store(true);
     _log->info("App Initialized");
 }
 

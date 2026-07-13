@@ -1,4 +1,5 @@
 #include "motor/Config.hpp"
+#include "ethercat/Util.hpp"
 
 void gravity::MotorConfig::read_configs()
 {
@@ -28,10 +29,13 @@ void gravity::MotorConfig::read_configs()
 
         const auto direction = motor->polarity->read_sdo();
 
+        auto conf = motor->get_slave_info();
+
         _log->info(
             "------------------------------------------------------------\n"
             "Motor Joint         : {}\n"
             "Motor Position      : {}\n"
+            "Motor State         : {}\n"
             "Motor Direction     : {}\n"
             "Encoder Mode        : {}\n"
             "Feed Constant       : {}\n"
@@ -44,6 +48,7 @@ void gravity::MotorConfig::read_configs()
             "------------------------------------------------------------",
             motor->joint,
             motor->position,
+            al_state_str(conf.al_state),
             direction,
             encoder_mode,
             feed_constant,
@@ -52,7 +57,6 @@ void gravity::MotorConfig::read_configs()
             max_motor_speed, max_speed_rad,
             max_position_limit, max_pos_rad,
             min_position_limit, min_pos_rad,
-
             current_pos, current_pos_rad);
     }
 }
