@@ -16,8 +16,6 @@ namespace gravity
         std::shared_ptr<Controller> controller;
         const std::vector<uint16_t> active_joints_indices = {4};
 
-        // cycle
-        void cyclic_loop();
         std::thread cyclic_thread;
         uint32_t cycle_overun_count{0};
         std::atomic_bool cyclic_loop_active{false};
@@ -28,6 +26,10 @@ namespace gravity
         task_response_cb_t on_task_response;
         std::unique_ptr<planner::routine::TaskManager> task_manager;
         std::shared_ptr<spdlog::logger> _log;
+
+        // cycle
+        void cyclic_loop();
+        void handle_cycle_error(const std::string &err);
 
     public:
         explicit App(const std::string &conf, const std::string &urdf);

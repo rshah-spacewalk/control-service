@@ -5,7 +5,7 @@
 #include "motor/Motor.hpp"
 #include "motor/Config.hpp"
 #include "controller/MoverConfig.hpp"
-
+#include "ethercat/ThreadUtil.hpp"
 #include <gravity/pubsub/Machine.hpp> // for jointstate
 
 namespace gravity
@@ -16,8 +16,11 @@ namespace gravity
         bool map_pdos{false};
         trajectory_params params;
 
+        std::mutex cycle_mtx;
         uint8_t *domain_pdm{nullptr};
+        ec_domain_state_t domain_state;
         std::shared_ptr<EthercatMaster> master;
+        std::atomic<uint64_t> exchange_counter{0};
 
         std::array<uint16_t, 6> motor_error{};
         std::array<uint16_t, 6> motor_status{};
@@ -28,13 +31,9 @@ namespace gravity
         std::vector<gravity::MotorBase *> motor_refs;
         std::vector<std::unique_ptr<MotorBase>> motors;
 
-        std::mutex cycle_mtx;
-        std::atomic_bool quick_stop_on{false};
-
         std::shared_ptr<spdlog::logger> _log;
 
         bool config_cycle();
-
         bool handle_motor_error(const uint16_t &error, const uint16_t &position);
         bool handle_motor_status(const uint16_t &status, const uint16_t &position);
 
@@ -46,14 +45,19 @@ namespace gravity
 
         ~Controller();
 
+        bool is_op_mode();
+        bool is_running();
         bool is_faulted();
-        bool is_stopped() { return quick_stop_on.load(); }
+        bool is_stopped();
         bool is_activated() { return master->is_activated(); }
 
         bool setup(const bool strict);
 
         bool enable();
         bool disable();
+
+        bool activate_motors();
+        bool deactivate_motors();
 
         bool quick_stop();
         bool release_quick_stop();
@@ -66,3 +70,9 @@ namespace gravity
 // contructor order : top -> bottom
 // destructor order : bottom -> top
 // find ~/vcpkg/installed/arm64-linux-release -iname "*DomainParticipant*"
+
+// for (auto &motor : motors)
+// {
+//     motor->enable();
+// }
+// // 3. config motor pdos & enable motor cycle

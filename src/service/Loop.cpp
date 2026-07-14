@@ -8,19 +8,21 @@ void gravity::App::cyclic_loop()
         gravity::Clock start = gravity::Clock::now();
         try
         {
-            if (!controller->is_faulted() && !controller->is_stopped())
+            auto current_pos = controller->cycle(task_manager->get_position());
+            if (controller->is_running())
             {
-                auto current_pos = controller->cycle(task_manager->get_position());
                 task_manager->process_task_loop(current_pos);
             }
-            else
+
+            if (controller->is_faulted() || controller->is_stopped())
             {
-                _log->error("Controller at fault or stopped!");
+                throw std::runtime_error("Cyclic loop error - controller at fault or stopped");
             }
         }
         catch (const std::exception &e)
         {
-            _log->error("Cyclic loop exception: {}", e.what());
+            handle_cycle_error(e.what());
+            break;
         }
 
         // sleep for interval
@@ -37,4 +39,10 @@ void gravity::App::cyclic_loop()
             remaining.sleepFor();
         }
     }
+}
+
+void gravity::App::handle_cycle_error(const std::string &err)
+{
+    _log->error(err);
+    controller->disable();
 }

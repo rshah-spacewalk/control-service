@@ -62,7 +62,8 @@ bool gravity::Controller::setup(bool strict)
         }
 
         motor_config = std::make_shared<gravity::MotorConfig>(motor_refs, params, master);
-        motor_config->apply_configs();
+        // motor_config->apply_configs();
+        // motor_config->reset_encoders();
         motor_config->read_configs();
 
         // position setup
@@ -70,7 +71,12 @@ bool gravity::Controller::setup(bool strict)
         {
             current_position_pulse[i] = motors[i]->position_actual_value->read_sdo();
             handle_motor_status(motors[i]->status_word->read_sdo(), i);
-            handle_motor_error(motors[i]->error_code->read_sdo(), i);
+            if (!handle_motor_error(motors[i]->error_code->read_sdo(), i))
+            {
+                auto err = fmt::format("Motor {} error unresolved", i);
+                _log->error(err);
+                throw std::runtime_error(err);
+            }
         }
         _log->info("Current Position: {}", current_position_pulse);
     }

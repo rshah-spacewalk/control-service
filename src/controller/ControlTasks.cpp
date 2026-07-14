@@ -1,5 +1,4 @@
 #include "controller/Controller.hpp"
-#include "ethercat/ThreadUtil.hpp"
 
 bool gravity::Controller::config_cycle()
 {
@@ -8,6 +7,7 @@ bool gravity::Controller::config_cycle()
         _log->error("Master not requested");
         return false;
     }
+
     // 1. optionally map pdos
     if (map_pdos)
     {
@@ -15,7 +15,6 @@ bool gravity::Controller::config_cycle()
         master->release_master();
         gravity::Clock::fromSeconds(5 * motors.size()).sleepFor();
         master->request_master();
-        // master->create_domain();
         _log->info("PDO Mapping completed");
     }
 
@@ -44,10 +43,10 @@ bool gravity::Controller::enable()
         return false;
     }
 
-    // 1. enable master
+    // 1. enable master - sets PRE-OP
     master->activate_master();
 
-    // 2. get domain data pointer
+    // 2. get domain data pointer call after ecrt_master_activate()
     domain_pdm = ecrt_domain_data(master->ec_domain_ptr);
     if (!domain_pdm)
     {
@@ -55,22 +54,8 @@ bool gravity::Controller::enable()
         return false;
     }
 
-    // 3. config motor pdos & enable motor cycle
-    ThreadGroup init_threads(motors.size());
-    for (auto &motor : motors)
-    {
-        init_threads.threads.emplace_back(
-            [raw_motor = motor.get()]()
-            {
-                raw_motor->enable();
-            });
-    }
-
     _log->info("Entering cyclic phase with cycle frequency: {} microseconds",
                config::PDO_INTERVAL);
-
-    ec_master_state_t state = get_master_state();
-    _log->info("Master State [{}]", al_state_str(state.al_states));
 
     return true;
 }
@@ -80,19 +65,11 @@ bool gravity::Controller::disable()
     _log->info("Disabling Controller");
     if (master->is_activated())
     {
-        // 2. disable motor cycle
-        ThreadGroup stop_threads(motors.size());
-        for (auto &motor : motors)
-        {
-            stop_threads.threads.emplace_back(
-                [raw_motor = motor.get()]()
-                {
-                    raw_motor->disable();
-                });
-        }
+
+        // remove domain, deactivate master
+        domain_pdm = nullptr;
         master->deactivate_master();
-        master->set_master_state("PREOP");
-        quick_stop_on.store(false);
+        // master->set_master_state("PREOP");
         return true;
     }
     else
@@ -103,13 +80,32 @@ bool gravity::Controller::disable()
     return false;
 }
 
+bool gravity::Controller::activate_motors()
+{
+    _log->info("activating motors");
+    for (auto &motor : motors)
+    {
+        motor->enable();
+    }
+    return true;
+}
+
+bool gravity::Controller::deactivate_motors()
+{
+    _log->info("deactivating motors");
+    for (auto &motor : motors)
+    {
+        motor->disable();
+    }
+    return true;
+}
+
 bool gravity::Controller::quick_stop()
 {
     for (int i = 0; i < motors.size(); i++)
     {
         motors[i]->quick_stop();
     }
-    quick_stop_on.store(true);
     _log->warn("Motors Quick Stop");
     return true;
 }
@@ -120,7 +116,15 @@ bool gravity::Controller::release_quick_stop()
     {
         motors[i]->release_quick_stop();
     }
-    quick_stop_on.store(false);
     _log->warn("Motors Quick Stop Released");
     return true;
 }
+
+//  start_cyclic_thread(controller->motors);--
+//    activate_master_cycle(); // sets pre-op
+//     keep_running.store(true);
+//     get_master_state();
+//     cyclic_thread = std::thread(cyclic_loop, std::ref(motors));
+//         domain -> pdo cyle
+
+// controller->enable_cyclic();    ptr->enable_cyclic();// motor cyclic

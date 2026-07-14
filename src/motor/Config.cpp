@@ -65,14 +65,11 @@ void gravity::MotorConfig::reset_errors()
     }
 }
 
-void gravity::MotorConfig::reset_encoder()
+void gravity::MotorConfig::reset_encoders()
 {
     for (const auto &motor : motors)
     {
-        // Absolute Encoder settings, 9: Clear multiturn position, reset multiturn alarm and activate multiturn absolute function
-        // sdo_write<uint32_t>(motor->position, 0x2015, 0x0, 0x9);
-        motor->absolute_encoder_setting->write_sdo(static_cast<uint32_t>(
-            AbsoluteEncoderMode::CLEAR_MULTI_TURN_POSITION_RESET_MULTI_TURN_ALARM_ACTIVATE_MULTI_TURN_ABSOLUTE));
+        motor->reset_encoder();
     }
     _log->info("Encoder position reset done!");
 }

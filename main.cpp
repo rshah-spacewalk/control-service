@@ -9,7 +9,7 @@ int main()
         const std::string urdf = "/home/ravi/libs/gravity_libs/assets/urdf/kepler_stl.urdf";
         auto app = std::make_unique<gravity::App>(conf, urdf);
         app->enable(1);
-        std::this_thread::sleep_for(std::chrono::seconds(6));
+        std::this_thread::sleep_for(std::chrono::seconds(10));
         app->disable(1);
     }
     catch (std::exception &e)

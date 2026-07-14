@@ -2,6 +2,9 @@
 
 #include <stdint.h>
 #include <nlohmann/json.hpp>
+#include <iostream>
+#include <iomanip>
+#include "ethercat/Util.hpp"
 
 namespace gravity
 {
@@ -42,6 +45,10 @@ namespace gravity
         bool internal_limit_valid{}; // Bit 11
         bool origin_found{};         // Bit 15
     };
+    // BOOST_DESCRIBE_STRUCT(
+    //     status_word_entity,
+    //     (),
+    //     (servo_ready, start, servo_running, fault, main_circuit_power, quick_stop, servo_cannot_run, warning, remote_control, arrived_at_position, internal_limit_valid, origin_found))
 
     inline status_word_entity decode_status_word(const uint16_t &status)
     {
@@ -69,13 +76,13 @@ namespace gravity
     {
         const status_word_entity s = decode_status_word(status);
         nlohmann::json j = nlohmann::json{
-            {"value", status},
+            {"value", hex_str(status)},
             {"servo_ready", s.servo_ready},
             {"start", s.start},
             {"servo_running", s.servo_running},
             {"fault", s.fault},
             {"main_circuit_power", s.main_circuit_power},
-            {"quick_stop", s.quick_stop},
+            {"quick_stop", s.quick_stop}, // invert quick stop
             {"servo_cannot_run", s.servo_cannot_run},
             {"warning", s.warning},
             {"remote_control", s.remote_control},
@@ -91,4 +98,5 @@ namespace gravity
         nlohmann::json j = to_json(status); // calls to_json automatically
         return j.dump(4);                   // 4-space pretty print
     }
+
 } // namespace gravity

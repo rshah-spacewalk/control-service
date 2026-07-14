@@ -4,6 +4,7 @@
 #include <ecrt.h>
 #include <string>
 
+#include "ethercat/Master.hpp"
 #include <gravity/fmt_config.hpp>
 #include <gravity/Logger.hpp>
 
@@ -19,15 +20,8 @@ namespace gravity
         size_t size = sizeof(T);
         uint8_t upload_buffer[size];
 
-        const uint16_t master_index = 0;
-        ec_master_t *master_ptr = ecrt_open_master(master_index);
-        if (master_ptr == nullptr)
-        {
-            throw std::runtime_error("Read Error: EC_MASTER invalid");
-        }
-
         int result_status = ecrt_master_sdo_upload(
-            master_ptr,
+            get_master_ptr(),
             slave_position,
             index,
             subindex,
@@ -68,15 +62,8 @@ namespace gravity
         uint32_t abort_code = 0;
         auto write_data = to_little_endian_bytes(value);
 
-        const uint16_t master_index = 0;
-        ec_master_t *master_ptr = ecrt_open_master(master_index);
-        if (master_ptr == nullptr)
-        {
-            throw std::runtime_error("Write Error: EC_MASTER invalid");
-        }
-
         int result = ecrt_master_sdo_download(
-            master_ptr,
+            get_master_ptr(),
             slave_position,
             index,
             subindex,
@@ -93,8 +80,9 @@ namespace gravity
             throw std::runtime_error(err);
         }
 
-        spdlog::debug("SDO WRITE [{} : {:#x} : {:#x}] -> {:#x} == {} == {}", slave_position, index, subindex, value,
-                      value, to_binary_string(value));
+        spdlog::info("[{}] SDO WRITE [{} : {:#x} : {:#x}] -> {:#x} == {} == {}",
+                     (result ? "Fail" : "Success"), slave_position, index, subindex, value,
+                     value, binary_str(value));
         return result;
     }
 

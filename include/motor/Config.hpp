@@ -43,7 +43,7 @@ namespace gravity
 
         void read_configs();
         void apply_configs();
-        void reset_encoder();
+        void reset_encoders();
         void reset_errors();
 
         void map_pdos();

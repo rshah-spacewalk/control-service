@@ -112,7 +112,11 @@ bool gravity::EthercatMaster::deactivate_master()
         return true;
     }
 
-    ecrt_master_deactivate(ec_master_ptr);
+    if (ecrt_master_deactivate(ec_master_ptr))
+    {
+        _log->error("EtherCAT Master Deactivation failed");
+        return false;
+    }
     _log->info("EtherCAT Master Deactivated");
     return true;
 }
@@ -158,7 +162,7 @@ bool gravity::EthercatMaster::is_activated()
     ec_master_state_t state;
     if (get_ec_master_state(state))
     {
-        return state.al_states == 8;
+        return state.al_states == ec_al_state_t::EC_AL_STATE_OP;
     }
     else
         return false;
@@ -169,7 +173,8 @@ bool gravity::EthercatMaster::is_requested()
     ec_master_state_t state;
     if (get_ec_master_state(state))
     {
-        return state.al_states == 2 || state.al_states == 4;
+        return state.al_states == ec_al_state_t::EC_AL_STATE_PREOP ||
+               state.al_states == EC_AL_STATE_SAFEOP;
     }
     else
         return false;

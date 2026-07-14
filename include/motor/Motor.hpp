@@ -3,31 +3,23 @@
 #include "ethercat/Master.hpp"
 #include "ethercat/Slave.hpp"
 #include "ethercat/DictionaryEntity.hpp"
+#include "ethercat/EthEnums.hpp"
 
 namespace gravity
 {
     class MotorBase : public SlaveBase
     {
     private:
-        int setup_delay_ms = 100;
-
+        int setup_delay_ms = 1000;
         std::vector<DictionaryEntity *> rx_pdos;
         std::vector<DictionaryEntity *> tx_pdos;
+        std::optional<SLAVE_CONTROL_WORD> last_cmd;
         std::shared_ptr<spdlog::logger> _log = make_class_logger("Motor");
+
+        void control_cmd(const SLAVE_CONTROL_WORD cw);
 
     public:
         const uint16_t joint{};
-        MotorBase(
-            const uint16_t alias,
-            const uint16_t position,
-            const uint32_t vendor_id,
-            const uint32_t product_code)
-            : SlaveBase(alias, position, vendor_id, product_code), joint(position)
-        {
-            build_data_objects();
-            config_pdo_list();
-            _log->info(str());
-        }
 
         MotorBase(ec_master_t *ec_master_ptr, uint16_t position, uint16_t _joint)
             : SlaveBase(ec_master_ptr, position), joint(_joint)
@@ -35,7 +27,7 @@ namespace gravity
 
             build_data_objects();
             config_pdo_list();
-            // _log->info(str());
+            _log->info(str());
         }
 
         ~MotorBase()
@@ -43,19 +35,24 @@ namespace gravity
             _log->info("Motor [{}] Released", position);
         }
 
+        // tasks
         void enable();
         void disable();
         void quick_stop();
         void release_quick_stop();
-        void cycle(uint8_t *domain_pdm);
 
+        bool reset_error();
+        bool reset_encoder();
+
+        // pdos
         void config_pdo_list();
         void build_data_objects();
+
         std::vector<uint32_t> rx_pdo_entries() const;
         std::vector<uint32_t> tx_pdo_entries() const;
-        std::vector<ec_pdo_entry_reg_t> get_domain_regs();
 
-        // dictionary Map
+        std::vector<ec_pdo_entry_reg_t> get_domain_regs();
+        void cycle(uint8_t *domain_pdm, const uint64_t _counter);
 
         // rx
         std::unique_ptr<DataObject<uint16_t>> control_word = nullptr;    // 1

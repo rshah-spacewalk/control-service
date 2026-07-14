@@ -13,23 +13,31 @@ bool gravity::Controller::handle_motor_error(const uint16_t &error, const uint16
             if (master->is_activated())
             {
                 quick_stop();
-                // disable();
             }
 
             if (error == 0x8612)
             {
                 _log->error("Motor: {} -> Bus input signal dithering", position);
-                if (master->is_requested())
-                {
-                    motors[position]->control_word->write_sdo(static_cast<uint16_t>(SLAVE_CONTROL_WORD::FAULT_TO_FAULTLESS));
-                    gravity::Clock::fromSeconds(1).sleepFor();
-                    return true;
-                }
+                return motors[position]->reset_error();
+            }
+
+            if (error == 0x821b)
+            {
+                _log->error("Motor [{}] SyncManager2 watchdog timer timeout", position);
+                return motors[position]->reset_error();
+            }
+
+            if (error == 0x8212)
+            {
+                _log->error("Motor [{}] No valid output data", position);
+                return motors[position]->reset_error();
             }
         }
+
         motor_error[position] = error;
+        return false;
     }
-    return false;
+    return true;
 }
 
 bool gravity::Controller::handle_motor_status(const uint16_t &status, const uint16_t &position)
@@ -37,30 +45,9 @@ bool gravity::Controller::handle_motor_status(const uint16_t &status, const uint
     if (motor_status[position] != status)
     {
         status_word_entity sw = decode_status_word(status);
-        _log->info("Status [{}] -> [{:#x}]", position, status);
-        _log->info("Status {}", status_word_str(status));
-
-        // if (sw.servo_running)
-        // {
-        //     _log->info("MotorStatus [{}] Servo Running", position);
-        // }
-
-        // if (sw.fault)
-        // {
-        //     _log->error("MotorStatus [{}] Fault", position);
-        // }
-
-        // if (!sw.quick_stop)
-        // {
-        //     _log->warn("MotorStatus [{}] Quick Stop", position);
-        // }
-
-        // if (sw.arrived_at_position)
-        // {
-        //     _log->info("MotorStatus [{}] Arrived at Position", position);
-        // }
+        _log->info("Status  [{}] -> [{:#x}]", position, status);
+        // _log->info("Status {}", status_word_str(status));
     }
-
     motor_status[position] = status;
     return true;
 }

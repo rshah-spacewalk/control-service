@@ -24,6 +24,17 @@ namespace gravity
         FAULT_TO_FAULTLESS = 0x0080, // Fault reset -> 0x0250
     };
 
+    enum class SLAVE_STATUS_WORD : uint16_t
+    {
+        POWER_ON = 0x0000,       // power on
+        FAULTLESS = 0x0250,      // Drive not ready yet -> 0x0250
+        READY = 0x0231,          // Switch on disabled, -> 0x0231
+        WAITING_ENABLE = 0x0233, // Ready to switch on -> 0x0233
+        RUNNING = 0x0237,        // Operation enabled -> 0x0237
+        QUICK_STOP = 0x0217,     // Quick stop active -> 0x0217
+        FAULT_STOP = 0x021F,     // fault stop -> 0x021F
+    };
+
     enum class AUTO_GAIN_TYPE : int32_t
     {
         RIGID_MAN = 0x000,

@@ -19,47 +19,45 @@ namespace gravity
     class DictionaryEntity
     {
     protected:
-        const std::string name;
         const uint8_t position;
         const uint16_t index;
         const uint8_t subindex;
-        const std::string uom;
         const MappingType mapping_type;
         uint32_t offset{};
+        uint64_t sequence{};
 
     public:
         DictionaryEntity(
-            std::string name,
             const uint8_t position,
             const uint16_t index,
             const uint8_t subindex,
-            std::string uom,
-            const MappingType mapping_type) : name(std::move(name)),
-                                              position(position),
-                                              index(index),
-                                              subindex(subindex),
-                                              uom(std::move(uom)),
-                                              mapping_type(mapping_type)
+            const MappingType mapping_type)
+            : position(position),
+              index(index),
+              subindex(subindex),
+              mapping_type(mapping_type)
         {
         }
 
-        const std::string &getName() const noexcept { return name; }
         uint16_t getIndex() const noexcept { return index; }
         uint8_t getSubindex() const noexcept { return subindex; }
         uint8_t getPosition() const noexcept { return position; }
-        const std::string &getUom() const noexcept { return uom; }
         MappingType getMappingType() const noexcept { return mapping_type; }
-
         uint32_t &getOffset() noexcept { return offset; } // return a ref
+        uint64_t &getSequence() noexcept { return sequence; }
 
         virtual ~DictionaryEntity() = default;
-
         virtual const uint32_t getEntryKey() const = 0;
-
         virtual const size_t get_size_bytes() const = 0;
 
-        virtual void read_from_domain(const uint8_t *domain) = 0;
-        virtual void write_to_domain(uint8_t *domain) const = 0;
+        virtual void write_to_domain(uint8_t *domain, const uint64_t _s) = 0;
+        virtual void read_from_domain(uint8_t *domain, const uint64_t _s) = 0;
+
+        // BOOST_DESCRIBE_CLASS(
+        //     DictionaryEntity, (),
+        //     (getIndex, getSubindex, getPosition, getMappingType, getOffset), // public
+        //     (),                                                              // protected funcs (none)
+        //     (position, index, subindex, mapping_type, offset))               // protected data
     };
 
     template <typename T>
@@ -82,37 +80,32 @@ namespace gravity
         {
             if (mapping_type != MappingType::RX_PDO)
             {
-                throw std::runtime_error("Attempted write to read-only entry: " + name);
+                auto err = fmt::format("Attempted write to read-only entry: 0x{:04x}", index);
+                throw std::runtime_error(err);
             }
             if (new_value < min_value || new_value > max_value)
             {
-                throw std::out_of_range("Value out of range for: " + name);
+                auto err = fmt::format("Value out of range for: 0x{:04x}", index);
+                throw std::out_of_range(err);
             }
         }
 
     public:
         DataObject(
-            const std::string &name,
             const uint8_t position,
             const uint16_t index,
             const uint8_t subindex,
             T min_value,
             T max_value,
             T default_value,
-            const std::string &uom,
             const MappingType mapping_type)
 
-            : DictionaryEntity(name, position, index, subindex, uom, mapping_type),
+            : DictionaryEntity(position, index, subindex, mapping_type),
               min_value(min_value),
               max_value(max_value),
               default_value(default_value),
               value(default_value)
         {
-            // spdlog::info(
-            //     "[{:<32}] [{} : 0x{:04X} : 0x{:02X}] [{:<12} -> {:<12}: {:<12}] {}",
-            //     getName(), getPosition(), getIndex(), getSubindex(),
-            //     getMinValue(), getMaxValue(), getDefaultValue(),
-            //     util::tf::enum_str(getMappingType()));
         }
 
         // Getter & Setters --------
@@ -133,12 +126,10 @@ namespace gravity
         void write_pdo(const T &new_value)
         {
             value = new_value;
-            // spdlog::info("SDO write [{} : 0x{:04X} : 0x{:02X}]", position, index, subindex);
         }
 
         T read_sdo()
         {
-            // spdlog::info("SDO read [{} : 0x{:04X} : 0x{:02X}] []", position, index, subindex);
             int resp = sdo_read<T>(position, index, subindex, value);
             return value;
         }
@@ -154,10 +145,11 @@ namespace gravity
             return sizeof(T);
         }
 
-        void read_from_domain(const uint8_t *domain) override
+        void read_from_domain(uint8_t *domain, const uint64_t _s) override
         {
             if (domain != nullptr)
             {
+                sequence = _s;
                 const uint8_t *p = domain + offset;
                 // 8 bit
                 if constexpr (std::is_same_v<T, uint8_t>)
@@ -186,10 +178,11 @@ namespace gravity
             }
         }
 
-        void write_to_domain(uint8_t *domain) const override
+        void write_to_domain(uint8_t *domain, const uint64_t _s) override
         {
             if (domain != nullptr)
             {
+                sequence = _s;
                 uint8_t *p = domain + offset;
                 // 8 bit
                 if constexpr (std::is_same_v<T, uint8_t>)
@@ -217,6 +210,11 @@ namespace gravity
                 throw std::runtime_error("Domain ptr null");
             }
         }
+        // BOOST_DESCRIBE_CLASS(
+        //     DataObject, (DictionaryEntity),
+        //     (getMinValue, getMaxValue, getDefaultValue, getEntryKey), // public
+        //     (),
+        //     (min_value, max_value, default_value, value))
     };
 
 } // namespace gravity::mover

@@ -26,6 +26,8 @@ gravity::task_response_t gravity::App::enable(const uint64_t &task_id)
             _log->warn("Failed to set RT priority: {}", std::strerror(errno));
         }
         _log->warn("Cyclic thread started!");
+
+        controller->activate_motors();
         resp.status = task_status_t::SUCCESS;
     }
     else
@@ -42,6 +44,11 @@ gravity::task_response_t gravity::App::disable(const uint64_t &task_id)
     allow_publishing.store(false);
     task_response_t resp{};
     resp.id = task_id;
+
+    if (controller->is_running())
+    {
+        controller->deactivate_motors();
+    }
 
     // 1. stop cylic thread
     cyclic_loop_active.store(false);
