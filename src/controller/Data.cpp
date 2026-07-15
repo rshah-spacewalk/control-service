@@ -52,9 +52,7 @@ bool gravity::Controller::is_stopped()
 
 bool gravity::Controller::fetch_current_state(msg::MachineStateInfo &machine_info)
 {
-    std::scoped_lock _lock(state_mtx);
     msg::JointStateInfo joint_info;
-
     auto master_state = get_master_state();
     machine_info.al_state(master_state.al_states);
 

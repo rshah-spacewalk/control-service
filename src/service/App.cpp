@@ -3,6 +3,7 @@
 gravity::App::App(const std::string &conf, const std::string &urdf)
     : _log(make_class_logger("App"))
 {
+
     // 1. trajectory configuration
     YAML::Node config = YAML::LoadFile(conf);
     auto params = config["trajectory_conf"].as<gravity::trajectory_params>();
@@ -35,5 +36,6 @@ std::string gravity::App::name() const { return "Mover"; }
 
 bool gravity::App::current_state(msg::MachineStateInfo &info)
 {
+    std::scoped_lock _lock(state_mtx);
     return controller->fetch_current_state(info);
 }

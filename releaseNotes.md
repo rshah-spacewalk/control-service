@@ -14,7 +14,8 @@
 * position write only when enable is truly on in control loop 
 * pdo value buffer is atomic 
 
-
+# 0.0.3
+* 
 
 
 

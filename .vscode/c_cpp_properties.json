@@ -9,7 +9,9 @@
                 "/opt/drake/include/**",
                 "/home/ravi/vcpkg/installed/x64-linux/include/**"
             ],
-            "defines": [],
+            "defines": [
+                "__aarch64__"
+            ],
             "cStandard": "c17",
             "cppStandard": "c++20",
             "compilerPath": "/usr/bin/clang++-20",
