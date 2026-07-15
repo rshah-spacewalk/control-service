@@ -12,7 +12,7 @@ bool gravity::Controller::is_running()
     {
         auto status = motor_status[i];
         status_word_entity sw = decode_status_word(status);
-        if (!sw.servo_running)
+        if (!sw.servo_running || sw.quick_stop)
         {
             // _log->warn("Motor [{}] not running", i);
             return false;
@@ -52,12 +52,14 @@ bool gravity::Controller::is_stopped()
 
 bool gravity::Controller::fetch_current_state(msg::MachineStateInfo &machine_info)
 {
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    machine_info.ms(ms);
-
+    std::scoped_lock _lock(state_mtx);
     msg::JointStateInfo joint_info;
+
     auto master_state = get_master_state();
     machine_info.al_state(master_state.al_states);
+
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    machine_info.ms(ms);
 
     if (master->is_activated())
     {
@@ -105,5 +107,6 @@ bool gravity::Controller::fetch_current_state(msg::MachineStateInfo &machine_inf
         }
         return true;
     }
+
     return false;
 }

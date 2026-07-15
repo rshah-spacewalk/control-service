@@ -17,6 +17,7 @@ namespace gravity
         trajectory_params params;
 
         std::mutex cycle_mtx;
+        std::mutex state_mtx;
         uint8_t *domain_pdm{nullptr};
         ec_domain_state_t domain_state;
         std::shared_ptr<EthercatMaster> master;
