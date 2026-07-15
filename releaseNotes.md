@@ -12,7 +12,7 @@
 * motor activate and deactivate functions added controlled through app
 * motor control cycle now based on state machine conditions
 * position write only when enable is truly on in control loop 
-* 
+* pdo value buffer is atomic 
 
 
 

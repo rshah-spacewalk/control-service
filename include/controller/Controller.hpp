@@ -20,7 +20,7 @@ namespace gravity
         uint8_t *domain_pdm{nullptr};
         ec_domain_state_t domain_state;
         std::shared_ptr<EthercatMaster> master;
-        std::atomic<uint64_t> exchange_counter{0};
+        std::atomic<uint64_t> cycle_counter{0};
 
         std::array<uint16_t, 6> motor_error{};
         std::array<uint16_t, 6> motor_status{};

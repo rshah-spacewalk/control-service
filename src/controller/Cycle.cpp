@@ -40,7 +40,7 @@ std::array<double, 6> gravity::Controller::cycle(const std::array<double, 6> &ta
     }
 
     // 6. motor pdo cycle;
-    auto seq = exchange_counter.fetch_add(1, std::memory_order_relaxed);
+    auto seq = cycle_counter.fetch_add(1, std::memory_order_relaxed);
     for (auto &motor : motors)
     {
         motor->cycle(domain_pdm, seq);

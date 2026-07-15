@@ -11,8 +11,8 @@ namespace gravity
 {
     enum class MappingType
     {
-        RX_PDO,
-        TX_PDO,
+        RX_PDO, // write
+        TX_PDO, // read only
         NONE
     };
     // remove string varaibles
@@ -74,7 +74,7 @@ namespace gravity
         const T min_value;
         const T max_value;
         const T default_value;
-        T value{};
+        std::atomic<T> value{};
 
         void checkRange(T new_value) const
         {
@@ -121,23 +121,25 @@ namespace gravity
 
         // READ & WRITE -------
 
-        T read_pdo() const { return value; }
+        T read_pdo() const { return value.load(std::memory_order_acquire); }
 
-        void write_pdo(const T &new_value)
+        void write_pdo(const T &_value)
         {
-            value = new_value;
+            checkRange(_value);
+            value.store(_value, std::memory_order_release);
         }
 
-        T read_sdo()
+        T read_sdo() const
         {
-            int resp = sdo_read<T>(position, index, subindex, value);
-            return value;
+            T _value{};
+            int resp = sdo_read<T>(position, index, subindex, _value);
+            return _value;
         }
 
-        int write_sdo(T new_value)
+        int write_sdo(const T _value) const
         {
-            checkRange(new_value);
-            return sdo_write<T>(position, index, subindex, new_value);
+            checkRange(_value);
+            return sdo_write<T>(position, index, subindex, _value);
         }
 
         size_t const get_size_bytes() const override
@@ -147,68 +149,65 @@ namespace gravity
 
         void read_from_domain(uint8_t *domain, const uint64_t _s) override
         {
-            if (domain != nullptr)
-            {
-                sequence = _s;
-                const uint8_t *p = domain + offset;
-                // 8 bit
-                if constexpr (std::is_same_v<T, uint8_t>)
-                    value = EC_READ_U8(p);
-                else if constexpr (std::is_same_v<T, int8_t>)
-                    value = EC_READ_S8(p);
-                // 16 bit
-                else if constexpr (std::is_same_v<T, uint16_t>)
-                    value = EC_READ_U16(p);
-                else if constexpr (std::is_same_v<T, int16_t>)
-                    value = EC_READ_S16(p);
-                // 32 bit
-                else if constexpr (std::is_same_v<T, uint32_t>)
-                    value = EC_READ_U32(p);
-                else if constexpr (std::is_same_v<T, int32_t>)
-                    value = EC_READ_S32(p);
-                // 64 bit
-                else if constexpr (std::is_same_v<T, uint64_t>)
-                    value = EC_READ_U64(p);
-                else if constexpr (std::is_same_v<T, int64_t>)
-                    value = EC_READ_S64(p);
-            }
-            else
+            if (domain == nullptr)
             {
                 throw std::runtime_error("Domain ptr null");
             }
-        }
 
+            sequence = _s;
+            const uint8_t *p = domain + offset;
+            T temp{};
+
+            if constexpr (std::is_same_v<T, uint8_t>)
+                temp = EC_READ_U8(p);
+            else if constexpr (std::is_same_v<T, int8_t>)
+                temp = EC_READ_S8(p);
+            else if constexpr (std::is_same_v<T, uint16_t>)
+                temp = EC_READ_U16(p);
+            else if constexpr (std::is_same_v<T, int16_t>)
+                temp = EC_READ_S16(p);
+            else if constexpr (std::is_same_v<T, uint32_t>)
+                temp = EC_READ_U32(p);
+            else if constexpr (std::is_same_v<T, int32_t>)
+                temp = EC_READ_S32(p);
+            else if constexpr (std::is_same_v<T, uint64_t>)
+                temp = EC_READ_U64(p);
+            else if constexpr (std::is_same_v<T, int64_t>)
+                temp = EC_READ_S64(p);
+            else
+                static_assert(!sizeof(T), "Unsupported type for read_from_domain");
+
+            value.store(temp, std::memory_order_release);
+        }
         void write_to_domain(uint8_t *domain, const uint64_t _s) override
         {
-            if (domain != nullptr)
-            {
-                sequence = _s;
-                uint8_t *p = domain + offset;
-                // 8 bit
-                if constexpr (std::is_same_v<T, uint8_t>)
-                    EC_WRITE_U8(p, value);
-                else if constexpr (std::is_same_v<T, int8_t>)
-                    EC_WRITE_S8(p, value);
-                // 16 bit
-                else if constexpr (std::is_same_v<T, uint16_t>)
-                    EC_WRITE_U16(p, value);
-                else if constexpr (std::is_same_v<T, int16_t>)
-                    EC_WRITE_S16(p, value);
-                // 32 bit
-                else if constexpr (std::is_same_v<T, uint32_t>)
-                    EC_WRITE_U32(p, value);
-                else if constexpr (std::is_same_v<T, int32_t>)
-                    EC_WRITE_S32(p, value);
-                // 64 bit
-                else if constexpr (std::is_same_v<T, uint64_t>)
-                    EC_WRITE_U64(p, value);
-                else if constexpr (std::is_same_v<T, int64_t>)
-                    EC_WRITE_S64(p, value);
-            }
-            else
+            if (domain == nullptr)
             {
                 throw std::runtime_error("Domain ptr null");
             }
+
+            sequence = _s;
+            uint8_t *p = domain + offset;
+            const T temp = value.load(std::memory_order_acquire);
+
+            if constexpr (std::is_same_v<T, uint8_t>)
+                EC_WRITE_U8(p, temp);
+            else if constexpr (std::is_same_v<T, int8_t>)
+                EC_WRITE_S8(p, temp);
+            else if constexpr (std::is_same_v<T, uint16_t>)
+                EC_WRITE_U16(p, temp);
+            else if constexpr (std::is_same_v<T, int16_t>)
+                EC_WRITE_S16(p, temp);
+            else if constexpr (std::is_same_v<T, uint32_t>)
+                EC_WRITE_U32(p, temp);
+            else if constexpr (std::is_same_v<T, int32_t>)
+                EC_WRITE_S32(p, temp);
+            else if constexpr (std::is_same_v<T, uint64_t>)
+                EC_WRITE_U64(p, temp);
+            else if constexpr (std::is_same_v<T, int64_t>)
+                EC_WRITE_S64(p, temp);
+            else
+                static_assert(!sizeof(T), "Unsupported type for write_to_domain");
         }
         // BOOST_DESCRIBE_CLASS(
         //     DataObject, (DictionaryEntity),

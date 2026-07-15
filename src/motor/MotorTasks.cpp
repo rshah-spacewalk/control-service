@@ -14,20 +14,18 @@ void gravity::MotorBase::control_cmd(const gravity::SLAVE_CONTROL_WORD cw)
     }
     uint16_t value = static_cast<uint16_t>(cw);
     control_word->write_pdo(value);
-    _log->info("Control [{}] -> [{}]", position, util::tf::enum_str(cw));
     last_cmd = cw;
+    _log->info("Control [{}] -> [{}] [{}]", position, util::tf::enum_str(cw), hex_str(value));
 }
 
 void gravity::MotorBase::enable()
 {
     _log->info("Motor [{}] enabling", position);
     status_word_entity status = decode_status_word(status_word->read_pdo());
+    gravity::Clock start = gravity::Clock::now();
 
     while (!status.servo_running)
     {
-        gravity::Clock::fromMilliseconds(10).sleepFor();
-        status = decode_status_word(status_word->read_pdo());
-
         if (status.main_circuit_power && status.servo_ready && status.start)
         {
             control_cmd(SLAVE_CONTROL_WORD::RUNNING); // 3. push to running
@@ -44,6 +42,17 @@ void gravity::MotorBase::enable()
         {
             control_cmd(SLAVE_CONTROL_WORD::FAULTLESS); // 0. wait for automatic transition
         }
+
+        auto elapsed_sec = (gravity::Clock::now() - start).toSeconds();
+        if (elapsed_sec >= 3)
+        {
+            break;
+        }
+        else
+        {
+            gravity::Clock::fromMilliseconds(10).sleepFor();
+            status = decode_status_word(status_word->read_pdo());
+        }
     }
 }
 
@@ -51,11 +60,9 @@ void gravity::MotorBase::disable()
 {
     _log->info("Motor [{}] disabling", position);
     status_word_entity status = decode_status_word(status_word->read_pdo());
-
+    gravity::Clock start = gravity::Clock::now();
     while (status.servo_ready)
     {
-        gravity::Clock::fromMilliseconds(10).sleepFor();
-        status = decode_status_word(status_word->read_pdo());
 
         if (status.servo_ready && status.start && status.servo_running)
         {
@@ -68,6 +75,17 @@ void gravity::MotorBase::disable()
         else if (status.servo_ready)
         {
             control_cmd(SLAVE_CONTROL_WORD::FAULTLESS); // RUNNING -> WAITING_ENABLE
+        }
+
+        auto elapsed_sec = (gravity::Clock::now() - start).toSeconds();
+        if (elapsed_sec >= 3)
+        {
+            break;
+        }
+        else
+        {
+            gravity::Clock::fromMilliseconds(10).sleepFor();
+            status = decode_status_word(status_word->read_pdo());
         }
     }
 }
