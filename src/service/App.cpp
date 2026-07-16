@@ -6,8 +6,8 @@ gravity::App::App(const std::string &conf, const std::string &urdf)
 
     // 1. trajectory configuration
     YAML::Node config = YAML::LoadFile(conf);
-    auto params = config["trajectory_conf"].as<gravity::trajectory_params>();
-    std::cout << param_str(params) << std::endl;
+    params = config["trajectory_conf"].as<gravity::trajectory_params>();
+    std::cout << (params) << std::endl;
 
     // 2. controller
     controller = std::make_shared<gravity::Controller>(params, active_joints_indices, map_pdos);

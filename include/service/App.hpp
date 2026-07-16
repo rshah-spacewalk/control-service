@@ -36,7 +36,7 @@ namespace gravity
 
         // task manager
         std::mutex state_mtx;
-        const trajectory_params params;
+        trajectory_params params;
         task_response_cb_t on_task_response;
         std::unique_ptr<planner::routine::TaskManager> task_manager;
         std::shared_ptr<spdlog::logger> _log;
